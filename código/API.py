@@ -2,11 +2,10 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-# TODO: Spotigui.get_songs_from_playlist()
-
 class Spotigui:
     def __init__(self):
-        self.scope = "user-read-recently-played user-modify-playback-state"
+        self.scope = "user-read-recently-played user-modify-playback-state "\
+            "playlist-read-private playlist-read-collaborative"
 
         with open(os.path.join("código", "config"), "r") as file:
             self.client_id = file.readline().split("=")[1].strip()
@@ -15,6 +14,7 @@ class Spotigui:
         
         self.sp = None
         self.playlist = None
+        self.playlist_id = None
 
         self.auth()
     
@@ -34,11 +34,33 @@ class Spotigui:
             feats_recent = self.sp.audio_features(ids_recent)
             return feats_recent
 
+    def get_playlists(self):
+        result = self.sp.user_playlists(user=self.sp.me()["id"])
+        playlists = result["items"]
+        while result["next"]:
+            result = self.sp.next(result)
+            playlists.extend(result["items"])
+        return playlists
+    
     def set_playlist(self, playlist):
-        self.playlist = playlist
+        achou = False
+        playlists = self.get_playlists()
+        for p in playlists:
+            if p["name"] == playlist:
+                achou = True
+                break
+        if achou:
+            self.playlist = playlist
+            self.playlist_id = p["id"]
 
     def get_songs_from_playlist(self):
         if self.sp is not None and \
             self.playlist is not None:
-            pass
-
+            result = self.sp.playlist_tracks(playlist_id=self.playlist_id)
+            musicas = result["items"]
+            while result["next"]:
+                result = self.sp.next(result)
+                musicas.extend(result["items"])
+            ids_playlist = list(map(lambda x: x["track"]["id"], musicas))
+            feats_playlist = self.sp.audio_features(ids_playlist)
+            return feats_playlist
