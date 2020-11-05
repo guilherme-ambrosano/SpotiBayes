@@ -3,75 +3,65 @@ import pandas as pd
 from numpy import median, cov
 from API import Spotigui
 
+
+def preprocess(df):
+    df = (df.select_dtypes(exclude=["object"])
+            .drop(["key", "mode"], 1))
+    return df
+
+
 # TODO: próxima música será aquela da playlist que tem
 #       médias da posteriori das features mais próxima da média das
 #       últimas 10 escutadas hoje que da playlist em si
-# TODO: modelo hierárquico de todas as músicas dadas as playlists em que estão
+
+sgui = Spotigui()
 
 playlist = "música normal só que suave"
-sgui = Spotigui()
 sgui.set_playlist(playlist)
 
-dados_playlist = pd.DataFrame.from_dict(sgui.get_songs_from_playlist())
-dados_playlist = dados_playlist.select_dtypes(exclude=["object"])
+dados = preprocess(pd.DataFrame.from_dict(sgui.get_songs_from_playlist()))
 
-dados_playlist = dados_playlist.drop(["key", "mode", "time_signature"], 1)
+sgui.set_playlist("Front BR")
+dados2 = preprocess(pd.DataFrame.from_dict(sgui.get_songs_from_playlist()))
 
-dados = pd.DataFrame.from_dict(sgui.get_recently_played())
-dados = dados.select_dtypes(exclude=["object"])
-
-dados = dados.drop(["key", "mode", "time_signature"], 1)
-
-ultima_musica = dados.iloc[-1]
-dados = dados.iloc[0:-1]
-
-# TODO: permitir inserir uma média por feature no modelo
-#       para poder colocar constraint em cada uma (<lower=0>)
-#       depois colocar tudo num mesmo vetor/matriz (ultima_musica_x)
+# TODO: modelo hierárquico de todas as músicas por playlist
+#       só precisa atualizar o modelo para as músicas recentes
+#       (as playlists não vão mudar)
 codigo_stan = """
 data {
-    int p;
-    vector[p] ultima_musica_p;
-    vector[p] medias_p;
-    matrix[p,p] sigma2_p;
-    vector[p] ultima_musica_r;
-    vector[p] medias_r;
-    matrix[p,p] sigma2_r;
+    int<lower=0> p;
+    int<lower=0> n;
+    matrix[n,p] musicas;
+    vector[p] mu0;
+    cov_matrix[p] Sigma;
 }
 parameters {
-    vector[p] mu0_p;
-    vector<lower=0>[p] sigma02_p;
-    vector<lower=0>[p] alfa_p;
-    vector<lower=0>[p] beta_p;
-    vector[p] mu0_r;
-    vector<lower=0>[p] sigma02_r;
-    vector<lower=0>[p] alfa_r;
-    vector<lower=0>[p] beta_r;
+    vector[p] mu;
 }
 model {
-    sigma02_p ~ inv_gamma(alfa_p, beta_p);
-    mu0_p ~ multi_normal(medias_p, diag_matrix(sigma02_p));
-    sigma02_r ~ inv_gamma(alfa_r, beta_r);
-    mu0_r ~ multi_normal(medias_r, diag_matrix(sigma02_r));
-
-    ultima_musica_p ~ multi_normal(mu0_p, sigma2_p);
-    ultima_musica_r ~ multi_normal(mu0_r, sigma2_r);
+    mu ~ multi_normal(mu0, Sigma);
+    for (i in 1:n) {
+        musicas[i] ~ multi_normal(mu, Sigma);
+    }
 }
 """
 
 dados_stan = {"p": len(dados.columns),
-              "ultima_musica_p": ultima_musica,
-              "medias_p": dados_playlist.mean(),
-              "sigma2_p": cov(dados_playlist.transpose()),
-              "ultima_musica_r": ultima_musica,
-              "medias_r": dados.mean(),
-              "sigma2_r": cov(dados.transpose())
+              "n": len(dados.index),
+              "musicas": dados,
+              "mu0": dados.mean(),
+              "Sigma": cov(dados.transpose()),
+             }
+
+dados_stan2 = {"p": len(dados2.columns),
+               "n": len(dados2.index),
+               "musicas": dados2,
+               "mu0": dados2.mean(),
+               "Sigma": cov(dados2.transpose()),
               }
 
-try:
-    # FIXME: convergência muito ruim e demorando muito tempo pra rodar
-    sm = pystan.StanModel(model_code=codigo_stan)
-    fit = sm.sampling(data=dados_stan, iter=10000, chains=1)
-    print(fit)
-except (ValueError, RuntimeError) as e:
-    print(e)
+sm = pystan.StanModel(model_code=codigo_stan)
+fit = sm.sampling(data=dados_stan, iter=5000, warmup=500, chains=1)
+fit2 = sm.sampling(data=dados_stan2, iter=5000, warmup=500, chains=1)
+print(fit)
+print(fit2)

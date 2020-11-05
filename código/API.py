@@ -36,10 +36,12 @@ class Spotigui:
 
     def get_playlists(self):
         result = self.sp.user_playlists(user=self.sp.me()["id"])
+        spotify = self.sp.user_playlists("spotify")
         playlists = result["items"]
         while result["next"]:
             result = self.sp.next(result)
             playlists.extend(result["items"])
+        playlists.extend(spotify["items"])
         return playlists
     
     def set_playlist(self, playlist):
