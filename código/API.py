@@ -2,12 +2,12 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-class Spotigui:
+class API_spotify:
     def __init__(self):
         self.scope = "user-read-recently-played user-modify-playback-state "\
             "playlist-read-private playlist-read-collaborative"
 
-        with open(os.path.join("código", "config"), "r") as file:
+        with open(os.path.join(".", "config"), "r") as file:
             self.client_id = file.readline().split("=")[1].strip()
             self.client_secret = file.readline().split("=")[1].strip()
             self.redirect_uri = file.readline().split("=")[1].strip()
@@ -60,9 +60,11 @@ class Spotigui:
             self.playlist is not None:
             result = self.sp.playlist_tracks(playlist_id=self.playlist_id)
             musicas = result["items"]
-            while result["next"]:
-                result = self.sp.next(result)
-                musicas.extend(result["items"])
             ids_playlist = list(map(lambda x: x["track"]["id"], musicas))
             feats_playlist = self.sp.audio_features(ids_playlist)
+            while result["next"]:
+                result = self.sp.next(result)
+                musicas = result["items"]
+                ids_playlist = list(map(lambda x: x["track"]["id"], musicas))
+                feats_playlist.extend(self.sp.audio_features(ids_playlist))
             return feats_playlist
