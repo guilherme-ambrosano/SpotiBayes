@@ -3,20 +3,61 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 import pystan
+import pickle
 
 from API import API_spotify
 
 
+VARIAVEIS = {"danceability":     "beta_infl_zero",
+             "energy":           "beta_infl_zero",
+             "speechiness":      "beta_infl_zero",
+             "liveness":         "beta_infl_zero",
+             "valence":          "beta_infl_zero",
+             "loudness":         "gamma",
+             "tempo":            "normal",
+             "acousticness":     "beta_infl_zero",
+             "instrumentalness": "beta_infl_zero"}
+
+
 def preprocess(df):
-    df2 = df[["danceability", "energy", "speechiness", # beta
-              "liveness", "valence",                   # beta
-              "loudness",                              # gama
-              "tempo",                                 # normal
-              "acousticness", "instrumentalness"       # beta infl zero
-              ]]
+    df2 = df.loc[:,VARIAVEIS.keys()]
     df2.loc[:,"loudness"] = -df2.loudness  # invertendo os valores negativos
     return df2
 
+
+def carregar_modelo(dist):
+    try:
+        sm = pickle.load(open(dist+".pkl", 'rb'))
+        return sm
+    except:
+        sm = pystan.StanModel(dist+".stan", verbose=False)
+        with open(dist+".pkl", 'wb') as f:
+            pickle.dump(sm, f)
+        return sm
+
+
+def rodar_stan(var, dist):
+    if dist == "beta_infl_zero":
+        dados_stan =  {"n": len(dados.index),
+                       # m -> numero de musicas que nao sao 0 nem 1
+                       "m": len(dados.loc[dados.loc[:,var].between(0.01, 0.99)].index),
+                       # uns e zeros -> primeira coluna: nem 0 nem 1,
+                       #                segunda coluna:  uns
+                       #                terceira coluna: zeros
+                       "uns_zeros": np.c_[np.array(dados.loc[:,var].between(0.01, 0.99)).astype(int),
+                           np.array(dados.loc[:,var] > 0.99).astype(int),
+                           np.array(dados.loc[:,var] < 0.01).astype(int)].transpose(),
+                       # musicas -> musicas que nao sao 0 nem 1
+                       "musicas": dados.loc[dados.loc[:,var].between(0.01, 0.99), var]
+                      }
+    else:
+        dados_stan = {"n": len(dados.index),
+                       "musicas": dados.loc[:,var]
+                      }
+    
+    sm = carregar_modelo(dist)
+    fit = sm.sampling(data=dados_stan, iter=5000, warmup=500, chains=1)
+    print(fit)
 
 # TODO: próxima música será aquela da playlist que tem
 #       médias da posteriori das features mais próxima da média das
@@ -24,11 +65,14 @@ def preprocess(df):
 
 sapi = API_spotify()
 
-playlist = "tr00"  # FIXME: o modelo só funciona pra algumas playlists
+playlist = "tr00"
+# playlist = "p/ jogar fifa"
+
 sapi.set_playlist(playlist)
 
 dados = preprocess(pd.DataFrame.from_dict(sapi.get_songs_from_playlist()))
 
+# Boxplots
 plt.subplots_adjust(hspace=0.5, wspace=0.4)
 for i in range(len(dados.columns)):
     plt.subplot(3, 3, i+1)
@@ -41,63 +85,11 @@ for i in range(len(dados.columns)):
     plt.title(var)
 plt.show()
 
+
 # TODO: modelo hierárquico de todas as músicas por playlist
 #       só precisa atualizar o modelo para as músicas recentes
 #       (as playlists não vão mudar)
 
-codigo_stan = """
-data {
-    int<lower=0> p;
-    int<lower=0> n;
-    matrix[n,p] musicas;
-}
-parameters {
-    vector<lower=0, upper=1>[7] theta0;
-    vector<lower=0>[7] alpha0;
-    vector<lower=0>[7] beta0;
-    real mu0;
-    real<lower=0> sigma0;
-    real<lower=0> alpha0_gamma;
-    real<lower=0> beta0_gamma;
-}
-model {
-    for (i in 1:n)
-        for (j in 1:p)
-            if (j <= 5)
-                if (musicas[i,j] < 0.01)
-                    1 ~ bernoulli(theta0[j]);
-                else {
-                    0 ~ bernoulli(theta0[j]);
-                    musicas[i,j] ~ beta(alpha0[j], beta0[j]);
-                }
-            else if (j == 6)
-                musicas[i, j] ~ gamma(alpha0_gamma, beta0_gamma);
-            else if (j == 7)
-                musicas[i, j] ~ normal(mu0, sigma0);
-            else
-                if (musicas[i,j] < 0.01)
-                    1 ~ bernoulli(theta0[j-2]);
-                else {
-                    0 ~ bernoulli(theta0[j-2]);
-                    musicas[i,j] ~ beta(alpha0[j-2], beta0[j-2]);
-                }
-}
-"""
-
-dados_stan = {"p": len(dados.columns),
-              "n": len(dados.index),
-              "musicas": dados
-             }
-
-sm = pystan.StanModel(model_code=codigo_stan)
-fit = sm.sampling(data=dados_stan, iter=5000, warmup=500, chains=1)
-print(fit)
-
-# sapi.set_playlist("Front BR")
-# dados2 = preprocess(pd.DataFrame.from_dict(sapi.get_songs_from_playlist()))
-# dados_stan2 = {"p": len(dados2.columns),
-#                "n": len(dados2.index),
-#                "musicas": dados2
-#               }
-# fit2 = sm.sampling(data=dados_stan2, iter=5000, warmup=500, chains=1)
-# print(fit2)
+for var in VARIAVEIS:
+    print(var)
+    rodar_stan(var, VARIAVEIS[var])
