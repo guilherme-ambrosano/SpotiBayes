@@ -68,3 +68,5 @@ class API_spotify:
                 ids_playlist = list(map(lambda x: x["track"]["id"], musicas))
                 feats_playlist.extend(self.sp.audio_features(ids_playlist))
             return feats_playlist
+
+
