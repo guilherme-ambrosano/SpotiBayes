@@ -56,18 +56,59 @@ def rodar_stan(var, dist, df):
                       }
     
     sm = carregar_modelo(dist)
-    fit = sm.sampling(data=dados_stan, iter=5000, warmup=500, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=10000, warmup=1000, chains=1)
     odict = fit.extract()
     tamanhos = list(map(lambda x: [1 if len(x.shape) == 1 else x.shape[1]][0], odict.values()))
+    _ = odict.pop("lp__")
     for i in range(len(odict)):
         if tamanhos[i] > 1:
             chave = list(odict)[i]
             arr = odict.pop(chave)
             for j in range(tamanhos[i]):
                 odict.update({str(chave)+str(j): arr[:,j]})
-    result = pd.DataFrame(odict, columns=odict.keys()).iloc[:,:-1]
+    result = pd.DataFrame(odict, columns=odict.keys())
     result_dict = result.to_dict(orient="list")
-    return result_dict
+
+    if dist == "beta_infl_zero":
+        theta00 = fit.summary()["summary"][2,0]
+        theta01 = fit.summary()["summary"][3,0]
+        alfa0 = fit.summary()["summary"][0,0]
+        beta0 = fit.summary()["summary"][1,0]
+
+        media = theta00*(alfa0/(alfa0+beta0))+theta01
+
+        theta00_low = fit.summary()["summary"][2,3]
+        theta01_low = fit.summary()["summary"][3,3]
+        alfa0_low = fit.summary()["summary"][0,3]
+        beta0_low = fit.summary()["summary"][1,3]
+
+        low = theta00_low*(alfa0_low/(alfa0_low+beta0_low)) + theta01_low
+
+        theta00_up = fit.summary()["summary"][2,7]
+        theta01_up = fit.summary()["summary"][3,7]
+        alfa0_up = fit.summary()["summary"][0,7]
+        beta0_up = fit.summary()["summary"][1,7]
+        
+        up = theta00_up*(alfa0_up/(alfa0_up+beta0_up)) + theta01_up
+    elif dist == "gamma":
+        alfa0 = fit.summary()["summary"][0,0]
+        beta0 = fit.summary()["summary"][1,0]
+        media = alfa0/beta0
+
+        alfa0_low = fit.summary()["summary"][0,3]
+        beta0_low = fit.summary()["summary"][1,3]
+        low = alfa0_low/beta0_low
+
+        alfa0_up = fit.summary()["summary"][0,7]
+        beta0_up = fit.summary()["summary"][1,7]
+        up = alfa0_up/beta0_up
+
+    elif dist == "normal":
+        media = fit.summary()["summary"][0,0]
+        low = fit.summary()["summary"][0,3]
+        up = fit.summary()["summary"][0,7]
+
+    return result_dict, media, low, up
 
 def get_posterioris(api, playlist=None, boxplot=False):
     if playlist is not None:
@@ -91,10 +132,17 @@ def get_posterioris(api, playlist=None, boxplot=False):
         plt.show()
     
     fits = {}
+    medias = {}
+    lows = {}
+    ups = {}
     for var in VARIAVEIS:
-        fits.update({var: rodar_stan(var, VARIAVEIS[var], dados)})
+        result_dict, media, low, up = rodar_stan(var, VARIAVEIS[var], dados)
+        fits.update({var: result_dict})
+        medias.update({var: media})
+        lows.update({var: low})
+        ups.update({var: up})
     
-    return fits
+    return fits, medias, lows, ups, dados
 
 
 if __name__ == "__main__":
@@ -102,5 +150,5 @@ if __name__ == "__main__":
 
     # playlist = "tr00"
     playlist = "p/ jogar fifa"
-    fits = get_posterioris(sapi, playlist, True)
+    fits, _, _, _, _ = get_posterioris(sapi, playlist, True)
     print(fits)

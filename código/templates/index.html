@@ -2,49 +2,110 @@
 
 {% block body %}
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
-        <label for="playlists">Escolha uma playlist:</label>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+        <label for="playlists">Escolha uma playlist:</label>
         <select name="playlists" id="playlists">
             {% for playlist in playlists %}
             <option value="{{playlist.name}}">{{playlist.name}}</option>
             {% endfor %}
         </select>
-
-        <canvas id="traceplot" width="400" height="400"></canvas>
-        <canvas id="histograma" width="400" height="400"></canvas>
+        <br><br>
 
         <script>
-            $('select').on('change', function() {
+            var variavel = null;
+            var parametro = null;
+            var div_resultados = null;
+            var div_variaveis = null;
+            var div_parametros = null;
+            $("#playlists").on("change", function() {
+                div_resultados = document.getElementById("div_resultados");
+                if (!(div_resultados==null)) {
+                    div_resultados.parentNode.removeChild(div_resultados);
+                }
+
+                div_resultados = document.createElement("div");
+                div_resultados.id = "div_resultados";
+                document.body.append(div_resultados);
+
                 $.get("/get_posterior", {"playlist": this.val})
                     .done(function(dados) {
-                        alert(dados["danceability"]["alpha0"].keys());
 
-                        var ctx = document.getElementById('traceplot').getContext('2d');
-                        var myChart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: [...Array(dados["danceability"]["alpha0"].length).keys()],
-                                datasets: {
-                                        label: "Alpha 0",
-						                backgroundColor: 'rgba(255, 99, 132, 1)',
-						                borderColor: 'rgba(255, 99, 132, 1)',
-                                        data: dados["danceability"]["alpha0"].map(Number),
-						                fill: false,
-						                pointRadius: 10,
-						                pointHoverRadius: 15,
-						                showLine: false
-                                    }
-                            },
-                            options: {
-                                scales: {
-                                    yAxes: [{
-                                        ticks: {
-                                            beginAtZero: false
-                                        }
-                                    }]
-                                }
+                        var lab = $("<label>").appendTo("#div_resultados")
+                        .attr("for", "variavel").text("Escolha uma variável:");
+                        var sel = $("<select>").appendTo("#div_resultados");
+                        Object.keys(dados).forEach(function(keys) {
+                            sel.append($("<option>").attr("value", keys).text(keys));
+                        });
+                        sel.attr("id","variavel");
+                        sel.on("change", function() {
+
+                            div_variaveis = document.getElementById("div_variaveis");
+                            if(!(div_variaveis == null)) {
+                                div_variaveis.parentNode.removeChild(div_variaveis);
                             }
+
+                            div_variaveis = document.createElement("div");
+                            div_variaveis.id = "div_variaveis";
+                            div_resultados = document.getElementById("div_resultados");
+                            div_resultados.append(div_variaveis);
+
+                            var linebreak = document.createElement("br");
+                            div_variaveis.append(linebreak);
+
+                            variavel = $("#variavel option:selected").text();
+
+                            var lab2 = $("<label>").appendTo("#div_variaveis")
+                            .attr("for", "parametro")
+                            .attr("id", "label").text("Escolha um parâmetro:");
+                            var sel2 = $("<select>").appendTo("#div_variaveis");
+                            Object.keys(dados[variavel]).forEach(function(keys) {
+                                sel2.append($("<option>").attr("value", keys).text(keys));
+                            });
+                            sel2.attr("id","parametro");
+                            sel2.on("change", function() {
+                                div_parametros = document.getElementById("div_parametros");
+                                if (!(div_parametros == null)) {
+                                    div_parametros.parentNode.removeChild(div_parametros);
+                                }
+
+                                div_parametros = document.createElement("div");
+                                div_parametros.id = "div_parametros";
+                                div_variaveis = document.getElementById("div_variaveis");
+                                div_variaveis.append(div_parametros);
+
+                                parametro = $("#parametro option:selected").text();
+
+                                y = dados[variavel][parametro].map(Number);
+                        
+                                var linebreak2 = document.createElement("br");
+                                div_parametros.append(linebreak2);
+
+                                var div_traceplot = document.createElement("div");
+                                var div_histograma = document.createElement("div");
+
+                                div_traceplot.style = "width:800px;height:600px;";
+                                div_histograma.style = "width:800px;height:600px;";
+
+                                div_traceplot.id = "traceplot";
+                                div_histograma.id = "histograma";
+
+                                div_parametros.append(div_traceplot);
+                                div_parametros.append(div_histograma);
+
+                                div_traceplot = document.getElementById("traceplot");
+                                div_histograma = document.getElementById("histograma");
+
+                                Plotly.newPlot(div_traceplot, [{
+                                    y: y,
+                                    mode: "lines"
+                                }]);
+
+                                Plotly.newPlot(div_histograma, [{
+                                    x: y,
+                                    type: "histogram"
+                                }]);
+                            });
                         });
                     });
                 });

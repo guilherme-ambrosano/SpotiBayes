@@ -15,7 +15,7 @@ def home():
 @app.route("/get_posterior")
 def posterior():
     playlist = request.args.get("playlist")
-    fits = get_posterioris(sapi, playlist)
+    fits, medias, lows, ups, dados = get_posterioris(sapi, playlist)
     return jsonify(fits)
 
 app.run()
