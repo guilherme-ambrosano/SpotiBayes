@@ -28,7 +28,9 @@
                 div_resultados.id = "div_resultados";
                 document.body.append(div_resultados);
 
-                $.get("/get_posterior", {"playlist": this.val})
+                pl = $("#playlists").val();
+
+                $.get("/get_posterior", {"playlist": pl})
                     .done(function(dados) {
 
                         var lab = $("<label>").appendTo("#div_resultados")

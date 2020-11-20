@@ -113,7 +113,8 @@ def rodar_stan(var, dist, df):
 def get_posterioris(api, playlist=None, boxplot=False):
     if playlist is not None:
         api.set_playlist(playlist)
-        dados = preprocess(pd.DataFrame.from_dict(api.get_songs_from_playlist()))
+        feats_playlist = api.get_songs_from_playlist()
+        dados = preprocess(pd.DataFrame.from_dict(feats_playlist))
     else:
         dados = preprocess(pd.DataFrame.from_dict(api.get_recently_played()))
 

@@ -15,16 +15,13 @@ def home():
 @app.route("/get_posterior")
 def posterior():
     playlist = request.args.get("playlist")
+    print(playlist)
     fits, medias, lows, ups, dados = get_posterioris(sapi, playlist)
 
     dentro = dados.loc[:,:]
     for var in dentro.columns:
-        print(dentro[var].head())
-        print(lows[var])
-        print(medias[var])
-        print(ups[var])
         dentro[var] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
-        print(dentro[var].value_counts())
+    print((dentro[dentro==True].sum(axis=1)/dentro.count(axis=1)).value_counts())
     return jsonify(fits)
 
 app.run()
