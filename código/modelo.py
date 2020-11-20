@@ -40,15 +40,15 @@ def rodar_stan(var, dist, df):
     if dist == "beta_infl_zero":
         dados_stan =  {"n": len(df.index),
                        # m -> numero de musicas que nao sao 0 nem 1
-                       "m": len(df.loc[df.loc[:,var].between(0.01, 0.99)].index),
+                       "m": len(df.loc[df.loc[:,var].between(0.1, 0.9)].index),
                        # uns e zeros -> primeira coluna: nem 0 nem 1,
                        #                segunda coluna:  uns
                        #                terceira coluna: zeros
-                       "uns_zeros": np.c_[np.array(df.loc[:,var].between(0.01, 0.99)).astype(int),
-                           np.array(df.loc[:,var] > 0.99).astype(int),
-                           np.array(df.loc[:,var] < 0.01).astype(int)].transpose(),
+                       "uns_zeros": np.c_[np.array(df.loc[:,var].between(0.1, 0.9)).astype(int),
+                           np.array(df.loc[:,var] > 0.9).astype(int),
+                           np.array(df.loc[:,var] < 0.1).astype(int)].transpose(),
                        # musicas -> musicas que nao sao 0 nem 1
-                       "musicas": df.loc[df.loc[:,var].between(0.01, 0.99), var]
+                       "musicas": df.loc[df.loc[:,var].between(0.1, 0.9), var]
                       }
     else:
         dados_stan = {"n": len(df.index),
@@ -56,7 +56,7 @@ def rodar_stan(var, dist, df):
                       }
     
     sm = carregar_modelo(dist)
-    fit = sm.sampling(data=dados_stan, iter=10000, warmup=1000, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=10000, warmup=5000, chains=1)
     odict = fit.extract()
     tamanhos = list(map(lambda x: [1 if len(x.shape) == 1 else x.shape[1]][0], odict.values()))
     _ = odict.pop("lp__")
@@ -70,24 +70,24 @@ def rodar_stan(var, dist, df):
     result_dict = result.to_dict(orient="list")
 
     if dist == "beta_infl_zero":
-        theta00 = fit.summary()["summary"][2,0]
-        theta01 = fit.summary()["summary"][3,0]
-        alfa0 = fit.summary()["summary"][0,0]
-        beta0 = fit.summary()["summary"][1,0]
+        theta00 = fit.summary()["summary"][0,0]
+        theta01 = fit.summary()["summary"][1,0]
+        alfa0 = fit.summary()["summary"][3,0]
+        beta0 = fit.summary()["summary"][4,0]
 
         media = theta00*(alfa0/(alfa0+beta0))+theta01
 
-        theta00_low = fit.summary()["summary"][2,3]
-        theta01_low = fit.summary()["summary"][3,3]
-        alfa0_low = fit.summary()["summary"][0,3]
-        beta0_low = fit.summary()["summary"][1,3]
+        theta00_low = fit.summary()["summary"][0,3]
+        theta01_low = fit.summary()["summary"][1,3]
+        alfa0_low = fit.summary()["summary"][3,3]
+        beta0_low = fit.summary()["summary"][4,7]
 
         low = theta00_low*(alfa0_low/(alfa0_low+beta0_low)) + theta01_low
 
-        theta00_up = fit.summary()["summary"][2,7]
-        theta01_up = fit.summary()["summary"][3,7]
-        alfa0_up = fit.summary()["summary"][0,7]
-        beta0_up = fit.summary()["summary"][1,7]
+        theta00_up = fit.summary()["summary"][0,7]
+        theta01_up = fit.summary()["summary"][1,7]
+        alfa0_up = fit.summary()["summary"][3,7]
+        beta0_up = fit.summary()["summary"][4,3]
         
         up = theta00_up*(alfa0_up/(alfa0_up+beta0_up)) + theta01_up
     elif dist == "gamma":
@@ -96,11 +96,11 @@ def rodar_stan(var, dist, df):
         media = alfa0/beta0
 
         alfa0_low = fit.summary()["summary"][0,3]
-        beta0_low = fit.summary()["summary"][1,3]
+        beta0_low = fit.summary()["summary"][1,7]
         low = alfa0_low/beta0_low
 
         alfa0_up = fit.summary()["summary"][0,7]
-        beta0_up = fit.summary()["summary"][1,7]
+        beta0_up = fit.summary()["summary"][1,3]
         up = alfa0_up/beta0_up
 
     elif dist == "normal":
