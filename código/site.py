@@ -1,3 +1,4 @@
+import pandas as pd
 from flask import Flask, render_template, request, jsonify
 
 from API import API_spotify
@@ -17,11 +18,32 @@ def posterior():
     playlist = request.args.get("playlist")
     print(playlist)
     fits, medias, lows, ups, dados = get_posterioris(sapi, playlist)
+    dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     dentro = dados.loc[:,:]
-    for var in dentro.columns:
-        dentro[var] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
-    print((dentro[dentro==True].sum(axis=1)/dentro.count(axis=1)).value_counts())
-    return jsonify(fits)
+    for var in dentro.columns[[0,1,3,5,6,7,8,9,10]]:
+        dentro[var+"_bool"] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
+    dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
+                        dentro.filter(regex="_bool$", axis=1).count(axis=1)))
+    dentro["Total"] = (dentro.Total >= 1/3)
+    dentro = (dentro
+              .drop(["analysis_url", "id", "key", "mode", "duration_ms", "time_signature",
+                     "track_href", "type", "uri", ], axis=1)
+              .transpose()
+              .to_json())
+    
+    medias = pd.DataFrame(medias, index=[1])
+    lows = pd.DataFrame(lows, index=[0])
+    ups = pd.DataFrame(ups, index=[2])
+
+    summary = pd.concat([lows, medias, ups]).transpose().to_json()
+
+    # print(summary)
+    # print(dentro)
+
+    result = {"fits": fits,
+              "summary": summary,
+              "dentro": dentro}
+    return jsonify(result)
 
 app.run()

@@ -113,8 +113,8 @@ def rodar_stan(var, dist, df):
 def get_posterioris(api, playlist=None, boxplot=False):
     if playlist is not None:
         api.set_playlist(playlist)
-        feats_playlist = api.get_songs_from_playlist()
-        dados = preprocess(pd.DataFrame.from_dict(feats_playlist))
+        feats_playlist = pd.DataFrame.from_dict(api.get_songs_from_playlist())
+        dados = preprocess(feats_playlist)
     else:
         dados = preprocess(pd.DataFrame.from_dict(api.get_recently_played()))
 
@@ -143,7 +143,10 @@ def get_posterioris(api, playlist=None, boxplot=False):
         lows.update({var: low})
         ups.update({var: up})
     
-    return fits, medias, lows, ups, dados
+    feats_playlist["titulo"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
+    feats_playlist["artista"] = feats_playlist.id.map(lambda row: ", ".join([artista["name"] for artista in api.sp.track(row)["artists"]]))
+    
+    return fits, medias, lows, ups, feats_playlist
 
 
 if __name__ == "__main__":

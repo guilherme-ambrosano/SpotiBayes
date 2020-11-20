@@ -18,6 +18,66 @@
             var div_resultados = null;
             var div_variaveis = null;
             var div_parametros = null;
+
+            var _table_ = document.createElement('table'),
+                _tr_ = document.createElement('tr'),
+                _th_ = document.createElement('th'),
+                _td_ = document.createElement('td'),
+                _br_ = document.createElement("br");
+
+            // Builds the HTML Table out of myList json data from Ivy restful service.
+            function buildHtmlTable(arr) {
+                var table = _table_.cloneNode(false);
+                var columns = addAllColumnHeaders(arr, table);
+                for (var i = 0, maxi = Object.keys(arr).length; i < maxi; ++i) {
+                    var tr = _tr_.cloneNode(false);
+                    if (arr[i]["Total"] != true && arr[i]["Total"] != null) {
+                        tr.style = "background-color:#fcae91;";
+                    }
+                    for (var j = 0, maxj = columns.length; j < maxj; ++j) {
+                        if (columns[j].endsWith("_bool") || columns[j] == "Total") {
+                            continue;
+                        }
+                        else {
+                            var td = _td_.cloneNode(false);
+                            cellValue = arr[i][columns[j]];
+                            td.appendChild(document.createTextNode(arr[i][columns[j]] || ''));
+                            if (arr[i][columns[j].concat("_bool")] != true && arr[i][columns[j].concat("_bool")] != null) {
+                                td.style = "color:#cb181d;";
+                            }
+                            tr.appendChild(td);
+                        }
+                    }
+                    table.appendChild(tr);
+                }
+                return table;
+            }
+            
+            // Adds a header row to the table and returns the set of columns.
+            // Need to do union of keys from all records as some records may not contain
+            // all records
+            function addAllColumnHeaders(arr, table) {
+                var columnSet = [];
+                var tr = _tr_.cloneNode(false);
+                for (var i = 0, l = Object.keys(arr).length; i < l; i++) {
+                    for (var key in arr[i]) {
+                        if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
+                            if (key.endsWith("_bool") || key == "Total") {
+                                columnSet.push(key);
+                            }
+                            else {
+                                columnSet.push(key);
+                                var th = _th_.cloneNode(false);
+                                th.appendChild(document.createTextNode(key));
+                                tr.appendChild(th);
+                            }
+                        }
+                    }
+                }
+                table.appendChild(tr);
+                return columnSet;
+            }
+            
             $("#playlists").on("change", function() {
                 div_resultados = document.getElementById("div_resultados");
                 if (!(div_resultados==null)) {
@@ -31,7 +91,14 @@
                 pl = $("#playlists").val();
 
                 $.get("/get_posterior", {"playlist": pl})
-                    .done(function(dados) {
+                    .done(function(dados_completos) {
+
+                        dados = dados_completos.fits
+
+                        div_resultados.appendChild(buildHtmlTable(JSON.parse(dados_completos.summary)));
+                        div_resultados.append(_br_.cloneNode(false));
+                        div_resultados.appendChild(buildHtmlTable(JSON.parse(dados_completos.dentro)));
+                        div_resultados.append(_br_.cloneNode(false));
 
                         var lab = $("<label>").appendTo("#div_resultados")
                         .attr("for", "variavel").text("Escolha uma variável:");
@@ -52,8 +119,7 @@
                             div_resultados = document.getElementById("div_resultados");
                             div_resultados.append(div_variaveis);
 
-                            var linebreak = document.createElement("br");
-                            div_variaveis.append(linebreak);
+                            div_variaveis.append(_br_.cloneNode(false));
 
                             variavel = $("#variavel option:selected").text();
 
@@ -80,8 +146,7 @@
 
                                 y = dados[variavel][parametro].map(Number);
                         
-                                var linebreak2 = document.createElement("br");
-                                div_parametros.append(linebreak2);
+                                div_parametros.append(_br_.cloneNode(false));
 
                                 var div_traceplot = document.createElement("div");
                                 var div_histograma = document.createElement("div");
