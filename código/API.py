@@ -5,7 +5,7 @@ from spotipy.oauth2 import SpotifyOAuth
 class API_spotify:
     def __init__(self):
         self.scope = "user-read-recently-played user-modify-playback-state "\
-            "playlist-read-private playlist-read-collaborative"
+            "playlist-read-private playlist-read-collaborative playlist-modify-public"
 
         with open(os.path.join(".", "config"), "r") as file:
             self.client_id = file.readline().split("=")[1].strip()
@@ -68,5 +68,27 @@ class API_spotify:
                 ids_playlist = list(map(lambda x: x["track"]["id"], musicas))
                 feats_playlist.extend(self.sp.audio_features(ids_playlist))
             return feats_playlist
+    
+    def create_playlist(self, tracks):
+        playlists = self.get_playlists()
+        playlists_names = list(map(lambda x: x["name"], playlists))
+
+        # Excluir a playlist antiga se ela existir
+        if "SpotiBayes" in playlists_names:
+            for p in playlists:
+                if p["name"] == "SpotiBayes":
+                    playlist_antiga = p
+                    break
+            self.sp.current_user_unfollow_playlist(playlist_antiga["id"])
+        
+        # Criando playlist nova
+        playlist_nova = self.sp.user_playlist_create(self.sp.me()["id"], "SpotiBayes")
+        # Limite de 100 tracks por request
+        tracks_faltantes = tracks
+        while len(tracks_faltantes) > 100:
+            tracks = tracks_faltantes[0:100]
+            tracks_faltantes = tracks_faltantes[100:]
+            self.sp.user_playlist_add_tracks(self.sp.me()["id"], playlist_nova["id"], tracks)
+        self.sp.user_playlist_add_tracks(self.sp.me()["id"], playlist_nova["id"], tracks_faltantes)
 
 

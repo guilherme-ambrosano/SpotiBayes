@@ -6,6 +6,7 @@
 
         <label for="playlists">Escolha uma playlist:</label>
         <select name="playlists" id="playlists">
+            <option hidden disabled selected value> Playlist </option>
             {% for playlist in playlists %}
             <option value="{{playlist.name}}">{{playlist.name}}</option>
             {% endfor %}
@@ -103,6 +104,8 @@
                         var lab = $("<label>").appendTo("#div_resultados")
                         .attr("for", "variavel").text("Escolha uma variável:");
                         var sel = $("<select>").appendTo("#div_resultados");
+                        sel.append($("<option>").attr("hidden", true).attr("disabled", true)
+                            .attr("selected", true).text("Variável"));
                         Object.keys(dados).forEach(function(keys) {
                             sel.append($("<option>").attr("value", keys).text(keys));
                         });
@@ -127,6 +130,8 @@
                             .attr("for", "parametro")
                             .attr("id", "label").text("Escolha um parâmetro:");
                             var sel2 = $("<select>").appendTo("#div_variaveis");
+                            sel2.append($("<option>").attr("hidden", true).attr("disabled", true)
+                                .attr("selected", true).text("Parâmetro"));
                             Object.keys(dados[variavel]).forEach(function(keys) {
                                 sel2.append($("<option>").attr("value", keys).text(keys));
                             });

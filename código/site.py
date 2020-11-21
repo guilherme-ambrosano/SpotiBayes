@@ -23,6 +23,8 @@ def posterior():
     dentro = dados.loc[:,:]
     for var in ["danceability", "energy", "loudness", "liveness", "valence", "tempo"]:
         dentro[var+"_bool"] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
+    
+    # Uma correção pra ele não jogar coisa fora sem sentido
     for var in ["speechiness", "acousticness", "instrumentalness"]:
         if medias[var] >= 0.5:
             dentro[var+"_bool"] = dentro[var] >= lows[var]
@@ -31,7 +33,13 @@ def posterior():
 
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))
-    dentro["Total"] = (dentro.Total >= 1/3)
+    dentro["Total"] = (dentro.Total >= 4/9)
+
+    # Criando a playlist com as músicas selecionadas
+    tracks = dentro.loc[dentro.Total==True, "id"]
+    sapi.create_playlist(tracks)
+
+    # Pegando só as variáveis importantes e transformando em JSON pro site
     dentro = (dentro
               .drop(["analysis_url", "id", "key", "mode", "duration_ms", "time_signature",
                      "track_href", "type", "uri", ], axis=1)
