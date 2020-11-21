@@ -21,8 +21,14 @@ def posterior():
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     dentro = dados.loc[:,:]
-    for var in dentro.columns[[0,1,3,5,6,7,8,9,10]]:
+    for var in ["danceability", "energy", "loudness", "liveness", "valence", "tempo"]:
         dentro[var+"_bool"] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
+    for var in ["speechiness", "acousticness", "instrumentalness"]:
+        if medias[var] >= 0.5:
+            dentro[var+"_bool"] = dentro[var] >= lows[var]
+        else:
+            dentro[var+"_bool"] = dentro[var] <= ups[var]
+
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))
     dentro["Total"] = (dentro.Total >= 1/3)

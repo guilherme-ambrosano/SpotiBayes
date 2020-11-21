@@ -56,7 +56,7 @@ def rodar_stan(var, dist, df):
                       }
     
     sm = carregar_modelo(dist)
-    fit = sm.sampling(data=dados_stan, iter=10000, warmup=5000, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
     odict = fit.extract()
     tamanhos = list(map(lambda x: [1 if len(x.shape) == 1 else x.shape[1]][0], odict.values()))
     _ = odict.pop("lp__")
