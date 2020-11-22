@@ -25,11 +25,15 @@ def posterior():
         dentro[var+"_bool"] = (dentro[var] >= lows[var]) & (dentro[var] <= ups[var])
     
     # Uma correção pra ele não jogar coisa fora sem sentido
-    for var in ["speechiness", "acousticness", "instrumentalness"]:
+    for var in ["liveness", "acousticness", "instrumentalness"]:
         if medias[var] >= 0.5:
             dentro[var+"_bool"] = dentro[var] >= lows[var]
         else:
             dentro[var+"_bool"] = dentro[var] <= ups[var]
+    if medias["speechiness"] <= 1/3:
+        dentro["speechiness_bool"] = dentro["speechiness"] >= lows[var]
+    elif medias["speechiness"] >= 2/3:
+        dentro["speechiness_bool"] = dentro["speechiness"] <= ups[var]
 
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))

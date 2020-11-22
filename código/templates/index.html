@@ -78,6 +78,14 @@
                 table.appendChild(tr);
                 return columnSet;
             }
+
+            function json_p_array(json, coluna) {
+                arr = [];
+                for (var i = 0, l = Object.keys(json).length; i < l; i++)  {
+                    arr.push(json[i][coluna])
+                }
+                return arr;
+            }
             
             $("#playlists").on("change", function() {
                 div_resultados = document.getElementById("div_resultados");
@@ -126,6 +134,42 @@
 
                             variavel = $("#variavel option:selected").text();
 
+                            console.log(dados_completos.dentro)
+                            console.log(json_p_array(dados_completos.dentro, variavel));
+                            var y_var = json_p_array(dados_completos.dentro, variavel).map(Number);
+
+                            div_variaveis.append(_br_.cloneNode(false));
+
+                            var div_boxplot = document.createElement("div");
+                            var div_histograma_var = document.createElement("div");
+
+                            div_boxplot.style = "width:800px;height:600px;";
+                            div_histograma_var.style = "width:800px;height:600px;";
+
+                            div_boxplot.id = "boxplot";
+                            div_histograma_var.id = "histograma_var";
+
+                            div_variaveis.append(div_boxplot);
+                            div_variaveis.append(div_histograma_var);
+
+                            div_boxplot = document.getElementById("boxplot");
+                            div_histograma_var = document.getElementById("histograma_var");
+
+                            Plotly.newPlot(div_boxplot, [{
+                                y: y_var,
+                                boxpoints: 'all',
+                                jitter: 0.3,
+                                pointpos: -1.8,
+                                type: "box"
+                            }]);
+
+                            Plotly.newPlot(div_histograma_var, [{
+                                x: y_var,
+                                type: "histogram"
+                            }]);
+                            
+                            div_variaveis.append(_br_.cloneNode(false));
+
                             var lab2 = $("<label>").appendTo("#div_variaveis")
                             .attr("for", "parametro")
                             .attr("id", "label").text("Escolha um parâmetro:");
@@ -149,7 +193,7 @@
 
                                 parametro = $("#parametro option:selected").text();
 
-                                y = dados[variavel][parametro].map(Number);
+                                var y = dados[variavel][parametro].map(Number);
                         
                                 div_parametros.append(_br_.cloneNode(false));
 
