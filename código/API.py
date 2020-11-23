@@ -29,7 +29,7 @@ class API_spotify:
 
     def get_recently_played(self):
         if self.sp is not None:
-            result = self.sp.current_user_recently_played()
+            result = self.sp.current_user_recently_played(limit=10)
             ids_recent = list(map(lambda x: x["track"]["id"], result["items"]))
             feats_recent = self.sp.audio_features(ids_recent)
             return feats_recent

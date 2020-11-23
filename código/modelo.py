@@ -38,38 +38,47 @@ def carregar_modelo(dist):
 
 def rodar_stan(var, dist, df):
     if dist == "beta_infl_zero":
+        uns_zeros = np.c_[np.array(df.loc[:,var].between(0.1, 0.9)).astype(int),
+                          np.array(df.loc[:,var] > 0.9).astype(int),
+                          np.array(df.loc[:,var] < 0.1).astype(int)]
         dados_stan =  {"n": len(df.index),
                        # m -> numero de musicas que nao sao 0 nem 1
                        "m": len(df.loc[df.loc[:,var].between(0.1, 0.9)].index),
                        # uns e zeros -> primeira coluna: nem 0 nem 1,
                        #                segunda coluna:  uns
                        #                terceira coluna: zeros
-                       "uns_zeros": np.c_[np.array(df.loc[:,var].between(0.1, 0.9)).astype(int),
-                           np.array(df.loc[:,var] > 0.9).astype(int),
-                           np.array(df.loc[:,var] < 0.1).astype(int)].transpose(),
+                       "uns_zeros": uns_zeros.transpose(),
                        # musicas -> musicas que nao sao 0 nem 1
                        "musicas": df.loc[df.loc[:,var].between(0.1, 0.9), var]
                       }
+
     else:
+        uns_zeros = np.c_[np.ones(len(df.index)), np.zeros(len(df.index)), np.zeros(len(df.index))]
         dados_stan = {"n": len(df.index),
                        "musicas": df.loc[:,var]
                       }
     
     sm = carregar_modelo(dist)
-    fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
+    #fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=1500, warmup=500, chains=1)
     odict = fit.extract()
     
-    # Pegando só os parametros da playlist
-    odict_playlist = odict.copy()
-    parametros = odict_playlist.copy()
-    for par in parametros:
-        if not par.startswith("playlist_"):
-            odict_playlist.pop(par)
-    odict = odict_playlist
-    print(odict)
+    # Pegando só os parametros das musicas
+    odict_musica = odict.copy()
+    for par in odict_musica.copy():
+        if not par.startswith("musica_"):
+            odict_musica.pop(par)
 
+    # Pegando só os parametros da playlist
+    for par in odict.copy():
+        if not par.startswith("playlist_"):
+            odict.pop(par)
+
+    # o theta tem 3 colunas - isso vai dar pau depois
     tamanhos = list(map(lambda x: [1 if len(x.shape) == 1 else x.shape[1]][0], odict.values()))
     
+    # transformando a array de 3 colunas (theta)
+    # em 3 arrays de 1 coluna
     for i in range(len(odict)):
         if tamanhos[i] > 1:
             chave = list(odict)[i]
@@ -78,7 +87,43 @@ def rodar_stan(var, dist, df):
                 odict.update({str(chave)+str(j): arr[:,j]})
     result = pd.DataFrame(odict, columns=odict.keys())
     result_dict = result.to_dict(orient="list")
+    
+    bools = []
+    # verificando se as medias das musicas
+    # estão além dos limites de 95% das playlists
+    for i in range(len(odict_musica)):
+        parametro_musica = list(odict_musica.keys())[i]
+        parametro_playlist = parametro_musica.replace("musica", "playlist")
+        medias = np.mean(odict_musica[parametro_musica], axis=0)
+        media = np.mean(odict[parametro_playlist])
+        low = np.quantile(odict[parametro_playlist], 0.025)
+        up = np.quantile(odict[parametro_playlist], 0.975)
+        bools_incompleto = np.logical_and(np.greater_equal(medias, low),
+                                          np.less_equal(medias, up))  # Faltam os uns e zeros
 
+        k = 0
+        bools_completo = []
+        for j in range(uns_zeros.shape[0]):
+            if uns_zeros[j, 0] == 1:
+                bools_completo.append(bools_incompleto[k])
+                k += 1
+            elif parametro_musica.endswith("speechiness") and uns_zeros[j, 1] == 1 and media > 2/3:
+                bools_completo.append(True)
+            elif parametro_musica.endswith("speechiness") and uns_zeros[j, 2] == 1 and media < 1/3:
+                bools_completo.append(True)
+            elif uns_zeros[j, 1] == 1 and media > 0.5:
+                bools_completo.append(True)
+            elif uns_zeros[j, 2] == 1 and media < 0.5:
+                bools_completo.append(True)
+            else:
+                bools_completo.append(False)
+        bools.append(bools_completo)
+        
+    bools = tuple(bools)
+    bools = np.logical_and.reduce(bools)  # Todos os parâmetros da variável
+                                          # precisam estar de acordo com a playlist
+
+    # Calculando as médias
     if dist == "beta_infl_zero":
         theta00 = fit.summary()["summary"][0,0]
         theta01 = fit.summary()["summary"][1,0]
@@ -87,38 +132,15 @@ def rodar_stan(var, dist, df):
 
         media = theta00*(alfa0/(alfa0+beta0))+theta01
 
-        theta00_low = fit.summary()["summary"][0,3]
-        theta01_low = fit.summary()["summary"][1,3]
-        alfa0_low = fit.summary()["summary"][3,3]
-        beta0_low = fit.summary()["summary"][4,7]
-
-        low = theta00_low*(alfa0_low/(alfa0_low+beta0_low)) + theta01_low
-
-        theta00_up = fit.summary()["summary"][0,7]
-        theta01_up = fit.summary()["summary"][1,7]
-        alfa0_up = fit.summary()["summary"][3,7]
-        beta0_up = fit.summary()["summary"][4,3]
-        
-        up = theta00_up*(alfa0_up/(alfa0_up+beta0_up)) + theta01_up
     elif dist == "gamma":
         alfa0 = fit.summary()["summary"][0,0]
         beta0 = fit.summary()["summary"][1,0]
         media = alfa0/beta0
 
-        alfa0_low = fit.summary()["summary"][0,3]
-        beta0_low = fit.summary()["summary"][1,7]
-        low = alfa0_low/beta0_low
-
-        alfa0_up = fit.summary()["summary"][0,7]
-        beta0_up = fit.summary()["summary"][1,3]
-        up = alfa0_up/beta0_up
-
     elif dist == "normal":
         media = fit.summary()["summary"][0,0]
-        low = fit.summary()["summary"][0,3]
-        up = fit.summary()["summary"][0,7]
-
-    return result_dict, media, low, up
+    
+    return result_dict, media, bools
 
 def get_posterioris(api, playlist=None, boxplot=False):
     if playlist is not None:
@@ -144,25 +166,28 @@ def get_posterioris(api, playlist=None, boxplot=False):
     
     fits = {}
     medias = {}
-    lows = {}
-    ups = {}
+    bools_dic = {}
     for var in VARIAVEIS:
-        result_dict, media, low, up = rodar_stan(var, VARIAVEIS[var], dados)
+        result_dict, media, bools = rodar_stan(var, VARIAVEIS[var], dados)
         fits.update({var: result_dict})
         medias.update({var: media})
-        lows.update({var: low})
-        ups.update({var: up})
+        bools_dic.update({var: bools})
     
     if playlist is not None:
         feats_playlist["titulo"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
         feats_playlist["artista"] = feats_playlist.id.map(lambda row: ", ".join([artista["name"] for artista in api.sp.track(row)["artists"]]))
+    else:
+        feats_playlist = None
     
-    return fits, medias, lows, ups, feats_playlist
+    return fits, medias, bools_dic, feats_playlist
 
 
 if __name__ == "__main__":
     sapi = API_spotify()
 
-    playlist = None
-    fits, _, _, _, _ = get_posterioris(sapi, playlist, True)
-    print(fits)
+    playlist = "teste"
+    fits, _, bools_dic, dados = get_posterioris(sapi, playlist, False)
+    bools_df = pd.DataFrame.from_dict(bools_dic)
+    bools_df.columns = [col + '_bool' for col in bools_df.columns]
+
+    dentro = pd.concat([dados, bools_df], axis=1)
