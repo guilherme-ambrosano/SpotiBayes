@@ -82,9 +82,6 @@
             function json_p_array(json, coluna) {
                 arr = [];
                 for (var i = 0, l = Object.keys(json).length; i < l; i++)  {
-                    console.log(i);
-                    console.log(json[i]);
-                    console.log(json[i][coluna]);
                     arr.push(json[i][coluna]);
                 }
                 return arr;

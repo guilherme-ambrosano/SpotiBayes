@@ -58,8 +58,18 @@ def rodar_stan(var, dist, df):
     sm = carregar_modelo(dist)
     fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
     odict = fit.extract()
+    
+    # Pegando só os parametros da playlist
+    odict_playlist = odict.copy()
+    parametros = odict_playlist.copy()
+    for par in parametros:
+        if not par.startswith("playlist_"):
+            odict_playlist.pop(par)
+    odict = odict_playlist
+    print(odict)
+
     tamanhos = list(map(lambda x: [1 if len(x.shape) == 1 else x.shape[1]][0], odict.values()))
-    _ = odict.pop("lp__")
+    
     for i in range(len(odict)):
         if tamanhos[i] > 1:
             chave = list(odict)[i]
@@ -143,8 +153,9 @@ def get_posterioris(api, playlist=None, boxplot=False):
         lows.update({var: low})
         ups.update({var: up})
     
-    feats_playlist["titulo"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
-    feats_playlist["artista"] = feats_playlist.id.map(lambda row: ", ".join([artista["name"] for artista in api.sp.track(row)["artists"]]))
+    if playlist is not None:
+        feats_playlist["titulo"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
+        feats_playlist["artista"] = feats_playlist.id.map(lambda row: ", ".join([artista["name"] for artista in api.sp.track(row)["artists"]]))
     
     return fits, medias, lows, ups, feats_playlist
 
@@ -152,7 +163,6 @@ def get_posterioris(api, playlist=None, boxplot=False):
 if __name__ == "__main__":
     sapi = API_spotify()
 
-    # playlist = "tr00"
-    playlist = "p/ jogar fifa"
+    playlist = None
     fits, _, _, _, _ = get_posterioris(sapi, playlist, True)
     print(fits)
