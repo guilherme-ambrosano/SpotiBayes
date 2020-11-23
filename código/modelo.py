@@ -90,14 +90,16 @@ def rodar_stan(var, dist, df):
     if dist == "beta_infl_zero":
         alpha = fit.summary()["summary"][3,0]
         beta = fit.summary()["summary"][4,0]
-        theta2 = fit.summary()["summary"][0,0]
-        low = Beta.ppf(0.025/theta2, alpha, beta)
-        upp = Beta.ppf(1 - 0.025/theta2, alpha, beta)
+        theta0 = fit.summary()["summary"][0,0]
+        theta1 = fit.summary()["summary"][1,0]
+        theta2 = fit.summary()["summary"][2,0]
+        low = Beta.ppf(0.025/theta0, alpha, beta)
+        upp = Beta.ppf(1 - 0.025/theta0, alpha, beta)
     elif dist == "gamma":
         alpha = fit.summary()["summary"][0,0]
         beta = fit.summary()["summary"][1,0]
-        low = gamma.ppf(0.025, alpha, beta)
-        upp = gamma.ppf(1 - 0.025, alpha, beta)
+        low = gamma.ppf(0.025, alpha, scale=1/beta)
+        upp = gamma.ppf(1 - 0.025, alpha, scale=1/beta)
     elif dist == "normal":
         mu = fit.summary()["summary"][0,0]
         sigma = fit.summary()["summary"][1,0]
@@ -114,8 +116,12 @@ def rodar_stan(var, dist, df):
         if uns_zeros[j, 0] == 1:
             bools.append(bools_incompleto[k])
             k += 1
-        else:
+        elif uns_zeros[j,1] == 1 and theta1 >= 0.05:
             bools.append(True)
+        elif uns_zeros[j,2] == 1 and theta2 >= 0.05:
+            bools.append(True)
+        else:
+            bools.append(False)
 
     # Calculando as médias
     if dist == "beta_infl_zero":
@@ -134,7 +140,7 @@ def rodar_stan(var, dist, df):
     elif dist == "normal":
         media = fit.summary()["summary"][0,0]
     
-    return result_dict, media, bools
+    return result_dict, low, media, upp, bools
 
 def get_posterioris(api, playlist=None, boxplot=False):
     if playlist is not None:
@@ -159,12 +165,16 @@ def get_posterioris(api, playlist=None, boxplot=False):
         plt.show()
     
     fits = {}
+    lows = {}
     medias = {}
+    upps = {}
     bools_dic = {}
     for var in VARIAVEIS:
-        result_dict, media, bools = rodar_stan(var, VARIAVEIS[var], dados)
+        result_dict, low, media, upp, bools = rodar_stan(var, VARIAVEIS[var], dados)
         fits.update({var: result_dict})
+        lows.update({var: low})
         medias.update({var: media})
+        upps.update({var: upp})
         bools_dic.update({var: bools})
     
     if playlist is not None:
@@ -173,14 +183,14 @@ def get_posterioris(api, playlist=None, boxplot=False):
     else:
         feats_playlist = None
     
-    return fits, medias, bools_dic, feats_playlist
+    return fits, lows, medias, upps, bools_dic, feats_playlist
 
 
 if __name__ == "__main__":
     sapi = API_spotify()
 
     playlist = "teste"
-    fits, _, bools_dic, dados = get_posterioris(sapi, playlist, False)
+    fits, _, _, _, bools_dic, dados = get_posterioris(sapi, playlist, False)
     bools_df = pd.DataFrame.from_dict(bools_dic)
     bools_df.columns = [col + '_bool' for col in bools_df.columns]
 

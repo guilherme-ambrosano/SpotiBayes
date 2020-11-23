@@ -17,7 +17,7 @@ def home():
 def posterior():
     playlist = request.args.get("playlist")
     print(playlist)
-    fits, medias, bools_dic, dados = get_posterioris(sapi, playlist)
+    fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     bools_df = pd.DataFrame(bools_dic)
@@ -27,7 +27,7 @@ def posterior():
 
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))
-    dentro["Total"] = (dentro.Total > 0)
+    dentro["Total"] = (dentro.Total > 7/9)
     
     # Criando a playlist com as músicas selecionadas
     tracks = dentro.loc[dentro.Total==True, "id"]
@@ -40,11 +40,11 @@ def posterior():
                      "track_href", "type", "uri", ], axis=1)
               .transpose()
               .to_json())
-                  
-    summary = pd.DataFrame(medias, index=[1]).transpose().to_json()
-
-    # print(summary)
-    # print(dentro)
+    
+    lows = pd.DataFrame(lows, index=[0])
+    medias = pd.DataFrame(medias, index=[1])
+    upps = pd.DataFrame(upps, index=[2])
+    summary = pd.concat([lows, medias, upps]).transpose().to_json()
 
     result = {"fits": fits,
               "summary": summary,
