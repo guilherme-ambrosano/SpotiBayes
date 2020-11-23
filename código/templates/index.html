@@ -82,7 +82,10 @@
             function json_p_array(json, coluna) {
                 arr = [];
                 for (var i = 0, l = Object.keys(json).length; i < l; i++)  {
-                    arr.push(json[i][coluna])
+                    console.log(i);
+                    console.log(json[i]);
+                    console.log(json[i][coluna]);
+                    arr.push(json[i][coluna]);
                 }
                 return arr;
             }
@@ -134,9 +137,7 @@
 
                             variavel = $("#variavel option:selected").text();
 
-                            console.log(dados_completos.dentro)
-                            console.log(json_p_array(dados_completos.dentro, variavel));
-                            var y_var = json_p_array(dados_completos.dentro, variavel).map(Number);
+                            var y_var = json_p_array(JSON.parse(dados_completos.dentro), variavel).map(Number);
 
                             div_variaveis.append(_br_.cloneNode(false));
 
