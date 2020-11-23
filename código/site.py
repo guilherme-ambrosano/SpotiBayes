@@ -27,11 +27,12 @@ def posterior():
 
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))
-    dentro["Total"] = (dentro.Total >= 4/9)
+    dentro["Total"] = (dentro.Total > 0)
     
     # Criando a playlist com as músicas selecionadas
     tracks = dentro.loc[dentro.Total==True, "id"]
-    sapi.create_playlist(tracks)
+    if len(tracks) >= 1:
+        sapi.create_playlist(tracks)
 
     # Pegando só as variáveis importantes e transformando em JSON pro site
     dentro = (dentro

@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from scipy.stats import beta as Beta
+from scipy.stats import gamma
+from scipy.stats import norm
+
 import pystan
 import pickle
 
@@ -59,16 +63,9 @@ def rodar_stan(var, dist, df):
                       }
     
     sm = carregar_modelo(dist)
-    #fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
-    fit = sm.sampling(data=dados_stan, iter=1500, warmup=500, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
     odict = fit.extract()
     
-    # Pegando só os parametros das musicas
-    odict_musica = odict.copy()
-    for par in odict_musica.copy():
-        if not par.startswith("musica_"):
-            odict_musica.pop(par)
-
     # Pegando só os parametros da playlist
     for par in odict.copy():
         if not par.startswith("playlist_"):
@@ -88,40 +85,37 @@ def rodar_stan(var, dist, df):
     result = pd.DataFrame(odict, columns=odict.keys())
     result_dict = result.to_dict(orient="list")
     
-    bools = []
     # verificando se as medias das musicas
     # estão além dos limites de 95% das playlists
-    for i in range(len(odict_musica)):
-        parametro_musica = list(odict_musica.keys())[i]
-        parametro_playlist = parametro_musica.replace("musica", "playlist")
-        medias = np.mean(odict_musica[parametro_musica], axis=0)
-        media = np.mean(odict[parametro_playlist])
-        low = np.quantile(odict[parametro_playlist], 0.025)
-        up = np.quantile(odict[parametro_playlist], 0.975)
-        bools_incompleto = np.logical_and(np.greater_equal(medias, low),
-                                          np.less_equal(medias, up))  # Faltam os uns e zeros
+    if dist == "beta_infl_zero":
+        alpha = fit.summary()["summary"][3,0]
+        beta = fit.summary()["summary"][4,0]
+        theta2 = fit.summary()["summary"][0,0]
+        low = Beta.ppf(0.025/theta2, alpha, beta)
+        upp = Beta.ppf(1 - 0.025/theta2, alpha, beta)
+    elif dist == "gamma":
+        alpha = fit.summary()["summary"][0,0]
+        beta = fit.summary()["summary"][1,0]
+        low = gamma.ppf(0.025, alpha, beta)
+        upp = gamma.ppf(1 - 0.025, alpha, beta)
+    elif dist == "normal":
+        mu = fit.summary()["summary"][0,0]
+        sigma = fit.summary()["summary"][1,0]
+        low = norm.ppf(0.025, mu, sigma)
+        upp = norm.ppf(1 - 0.025, mu, sigma)
 
-        k = 0
-        bools_completo = []
-        for j in range(uns_zeros.shape[0]):
-            if uns_zeros[j, 0] == 1:
-                bools_completo.append(bools_incompleto[k])
-                k += 1
-            elif parametro_musica.endswith("speechiness") and uns_zeros[j, 1] == 1 and media > 2/3:
-                bools_completo.append(True)
-            elif parametro_musica.endswith("speechiness") and uns_zeros[j, 2] == 1 and media < 1/3:
-                bools_completo.append(True)
-            elif uns_zeros[j, 1] == 1 and media > 0.5:
-                bools_completo.append(True)
-            elif uns_zeros[j, 2] == 1 and media < 0.5:
-                bools_completo.append(True)
-            else:
-                bools_completo.append(False)
-        bools.append(bools_completo)
-        
-    bools = tuple(bools)
-    bools = np.logical_and.reduce(bools)  # Todos os parâmetros da variável
-                                          # precisam estar de acordo com a playlist
+    medias = dados_stan["musicas"].to_numpy()
+    bools_incompleto = np.logical_and(np.greater_equal(medias, low),
+                                      np.less_equal(medias, upp))  # Faltam os uns e zeros
+
+    k = 0
+    bools = []
+    for j in range(uns_zeros.shape[0]):
+        if uns_zeros[j, 0] == 1:
+            bools.append(bools_incompleto[k])
+            k += 1
+        else:
+            bools.append(True)
 
     # Calculando as médias
     if dist == "beta_infl_zero":
