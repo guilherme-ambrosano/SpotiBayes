@@ -63,7 +63,7 @@ def rodar_stan(var, dist, df):
                       }
     
     sm = carregar_modelo(dist)
-    fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1)
+    fit = sm.sampling(data=dados_stan, iter=15000, warmup=5000, chains=1, control = {"adapt_delta": 0.99})
     odict = fit.extract()
     
     # Pegando só os parametros da playlist
