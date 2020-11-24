@@ -27,7 +27,7 @@ def posterior():
 
     dentro["Total"] = ((dentro.filter(regex="_bool$", axis=1)[dentro==True].sum(axis=1)/
                         dentro.filter(regex="_bool$", axis=1).count(axis=1)))
-    dentro["Total"] = (dentro.Total > 7/9)
+    dentro["Total"] = (dentro.Total > 2/3)
     
     # Criando a playlist com as músicas selecionadas
     tracks = dentro.loc[dentro.Total==True, "id"]
