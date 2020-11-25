@@ -41,10 +41,11 @@ def posterior():
               .transpose()
               .to_json())
     
-    lows = pd.DataFrame(lows, index=[0])
-    medias = pd.DataFrame(medias, index=[1])
-    upps = pd.DataFrame(upps, index=[2])
+    lows = pd.DataFrame(lows, index=["Limite inferior"])
+    medias = pd.DataFrame(medias, index=["Média"])
+    upps = pd.DataFrame(upps, index=["Limite superior"])
     summary = pd.concat([lows, medias, upps]).transpose().to_json()
+    print(summary)
 
     result = {"fits": fits,
               "summary": summary,

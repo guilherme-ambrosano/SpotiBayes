@@ -1,8 +1,3 @@
-var variavel = null;
-var parametro = null;
-var div_resultados = null;
-var div_variaveis = null;
-var div_parametros = null;
 
 var _table_ = document.createElement('table'),
     _tr_ = document.createElement('tr'),
@@ -12,21 +7,35 @@ var _table_ = document.createElement('table'),
 
 function buildHtmlTable(arr) {
     var table = _table_.cloneNode(false);
+    table.setAttribute("class", "table table-bordered");
+
     var columns = addAllColumnHeaders(arr, table);  // Nomes das colunas vão no <th>
+
     for (var i = 0, maxi = Object.keys(arr).length; i < maxi; ++i) {
+        key_i = Object.keys(arr)[i];
+
+        var th = _th_.cloneNode(false);
+        th.setAttribute("scope", "row");
+        th.appendChild(document.createTextNode(key_i));
+
         var tr = _tr_.cloneNode(false);
-        if (arr[i]["Total"] != true && arr[i]["Total"] != null) {
-            tr.style = "background-color:#fcae91;";  // Colorir o background das músicas removidas
+        tr.appendChild(th);
+        if ("Total" in arr[key_i]) {
+            if (arr[key_i]["Total"] != true && arr[key_i]["Total"] != null) {
+                tr.setAttribute("style", "background-color:#fcae91;");  // Colorir o background das músicas removidas
+            }
         }
+
         for (var j = 0, maxj = columns.length; j < maxj; ++j) {
-            if (columns[j].endsWith("_bool") || columns[j] == "Total") {
+            key_j = columns[j];
+            if (key_j.endsWith("_bool") || key_j == "Total") {
                 continue;
             } else {
                 var td = _td_.cloneNode(false);
-                cellValue = arr[i][columns[j]];
-                td.appendChild(document.createTextNode(arr[i][columns[j]] || ''));
-                if (arr[i][columns[j].concat("_bool")] != true && arr[i][columns[j].concat("_bool")] != null) {
-                    td.style = "color:#cb181d;";  // Texto vermelho pros valores fora dos IC
+                cellValue = arr[key_i][key_j];
+                td.appendChild(document.createTextNode(arr[key_i][key_j] || ''));
+                if (arr[key_i][key_j.concat("_bool")] != true && arr[key_i][key_j.concat("_bool")] != null) {
+                    td.setAttribute("style", "color:#cb181d;");  // Texto vermelho pros valores fora dos IC
                 }
                 tr.appendChild(td);
             }
@@ -40,15 +49,21 @@ function buildHtmlTable(arr) {
 function addAllColumnHeaders(arr, table) {
     var columnSet = [];
     var tr = _tr_.cloneNode(false);
+    var th = _th_.cloneNode(false);
+    th.setAttribute("scope", "col");
+    th.appendChild(document.createTextNode(""));
+    tr.appendChild(th);
     for (var i = 0, l = Object.keys(arr).length; i < l; i++) {
-        for (var key in arr[i]) {
-            if (arr[i].hasOwnProperty(key) && columnSet.indexOf(key) === -1) {
-                if (key.endsWith("_bool") || key == "Total") {  // Não colocar os bools no <th>
-                    columnSet.push(key);
+        key_i = Object.keys(arr)[i];
+        for (var key_j in arr[key_i]) {
+            if (arr[key_i].hasOwnProperty(key_j) && columnSet.indexOf(key_j) === -1) {
+                if (key_j.endsWith("_bool") || key_j == "Total") {  // Não colocar os bools no <th>
+                    columnSet.push(key_j);
                 } else {
-                    columnSet.push(key);
+                    columnSet.push(key_j);
                     var th = _th_.cloneNode(false);
-                    th.appendChild(document.createTextNode(key));
+                    th.setAttribute("scope", "col");
+                    th.appendChild(document.createTextNode(key_j));
                     tr.appendChild(th);
                 }
             }
@@ -67,36 +82,38 @@ function json_p_array(json, coluna) {
 }
 
 function construir_div_parametros() {
-    div_parametros = document.getElementById("div_parametros");
-    if (!(div_parametros == null)) {
-        div_parametros.parentNode.removeChild(div_parametros);
+    var div_parametros_row = document.getElementById("div_parametros_row");
+    if (!(div_parametros_row == null)) {
+        div_parametros_row.parentNode.removeChild(div_parametros_row);
     }
 
-    div_parametros = document.createElement("div");
-    div_parametros.id = "div_parametros";
-    div_variaveis = document.getElementById("div_variaveis");
-    div_variaveis.append(div_parametros);
-
+    div_parametros_row = document.createElement("div");
+    div_parametros_row.setAttribute("id", "div_parametros_row");
+    div_parametros_row.setAttribute("class", "row");
+    
+    div_parametros_col = document.createElement("div");
+    div_parametros_col.setAttribute("id", "div_parametros_col");
+    div_parametros_col.setAttribute("class", "  col");
+    
     parametro = $("#parametro option:selected").text();
 
     var y = dados[variavel][parametro].map(Number);
 
-    div_parametros.append(_br_.cloneNode(false));
-
     var div_traceplot = document.createElement("div");
+    div_traceplot.setAttribute("class", "row");
+    div_traceplot.setAttribute("style", "width:800px;height:600px;");
+    div_traceplot.setAttribute("id", "traceplot");
     var div_histograma = document.createElement("div");
+    div_histograma.setAttribute("class", "row");
+    div_histograma.setAttribute("style", "width:800px;height:600px;");
+    div_histograma.setAttribute("id", "histograma");
 
-    div_traceplot.style = "width:800px;height:600px;";
-    div_histograma.style = "width:800px;height:600px;";
+    div_parametros_row.appendChild(div_parametros_col);
 
-    div_traceplot.id = "traceplot";
-    div_histograma.id = "histograma";
-
-    div_parametros.append(div_traceplot);
-    div_parametros.append(div_histograma);
-
-    div_traceplot = document.getElementById("traceplot");
-    div_histograma = document.getElementById("histograma");
+    div_variaveis_col = document.getElementById("div_variaveis_col");
+    div_variaveis_col.appendChild(div_parametros_row);
+    div_parametros_col.appendChild(div_traceplot);
+    div_parametros_col.appendChild(div_histograma);
 
     Plotly.newPlot(div_traceplot, [{
         y: y,
@@ -109,45 +126,48 @@ function construir_div_parametros() {
     }])
 }
 
-function construir_div_variaveis() {
-    div_variaveis = document.getElementById("div_variaveis");
-    if(!(div_variaveis == null)) {
-        div_variaveis.parentNode.removeChild(div_variaveis);
+function construir_div_variaveis(dentro) {
+    var div_variaveis_row = document.getElementById("div_variaveis_row");
+    var div_parametros_row = document.getElementById("div_parametros_row");
+    if(!(div_variaveis_row == null)) {
+        div_variaveis.parentNode.removeChild(div_variaveis_row);
+    }
+    if(!(div_parametros_row == null)) {
+        div_parametros.parentNode.removeChild(div_parametros_row);
     }
 
-    div_variaveis = document.createElement("div");
-    div_variaveis.id = "div_variaveis";
-    div_resultados = document.getElementById("div_resultados");
-    div_resultados.append(div_variaveis);
+    div_variaveis_row = document.createElement("div");
+    div_variaveis_row.setAttribute("id", "div_variaveis_row");
+    div_variaveis_row.setAttribute("class", "row");
+    
+    div_variaveis_col = document.createElement("div");
+    div_variaveis_col.setAttribute("id", "div_variaveis_col");
+    div_variaveis_col.setAttribute("class", "  col");
 
-    div_variaveis.append(_br_.cloneNode(false));
-
+    var div_resultados = document.getElementById("div_resultados_col");
+    
     variavel = $("#variavel option:selected").text();
 
-    var y_var = json_p_array(JSON.parse(dados_completos.dentro), variavel).map(Number);
-
-    div_variaveis.append(_br_.cloneNode(false));
+    var y_var = json_p_array(JSON.parse(dentro), variavel).map(Number);
 
     var div_boxplot = document.createElement("div");
+    div_boxplot.setAttribute("class", "row");
+    div_boxplot.setAttribute("style", "width:800px;height:600px;");
+    div_boxplot.setAttribute("id", "boxplot");
     var div_histograma_var = document.createElement("div");
+    div_histograma_var.setAttribute("class", "row");
+    div_histograma_var.setAttribute("style", "width:800px;height:600px;");
+    div_histograma_var.setAttribute("id", "histograma_var");
 
-    div_boxplot.style = "width:800px;height:600px;";
-    div_histograma_var.style = "width:800px;height:600px;";
-
-    div_boxplot.id = "boxplot";
-    div_histograma_var.id = "histograma_var";
-
-    div_variaveis.append(div_boxplot);
-    div_variaveis.append(div_histograma_var);
-
-    div_boxplot = document.getElementById("boxplot");
-    div_histograma_var = document.getElementById("histograma_var");
+    div_variaveis_col.appendChild(div_boxplot);
+    div_variaveis_col.appendChild(div_histograma_var);
 
     Plotly.newPlot(div_boxplot, [{
         y: y_var,
-        boxpoints: 'all',
+        boxpoints: "all",
         jitter: 0.3,
         pointpos: -1.8,
+        name: "",
         type: "box"
     }]);
 
@@ -156,56 +176,124 @@ function construir_div_variaveis() {
         type: "histogram"
     }]);
     
-    div_variaveis.append(_br_.cloneNode(false));
+    var div_form = document.createElement("div");
+    div_form.setAttribute("id", "div_form_parametro");
+    div_form.setAttribute("class", "form-group row");
 
-    var lab2 = $("<label>").appendTo("#div_variaveis")
-    .attr("for", "parametro")
-    .attr("id", "label").text("Escolha um parâmetro:");
-    var sel2 = $("<select>").appendTo("#div_variaveis");
-    sel2.append($("<option>").attr("hidden", true).attr("disabled", true)
-        .attr("selected", true).text("Parâmetro"));
+    div_variaveis_row.appendChild(div_variaveis_col);
+    div_resultados.appendChild(div_variaveis_row);    
+    div_resultados.appendChild(div_form);
+
+    $("<label>").appendTo("#div_form_parametro")
+        .attr("for", "parametro")
+        .attr("id", "label")
+        .text("Escolha um parâmetro:");
+    
+    var sel = $("<select>")
+        .appendTo("#div_form_parametro")
+        .append(
+            $("<option>")
+            .attr("hidden", true)
+            .attr("disabled", true)
+            .attr("selected", true)
+            .text("Parâmetro")
+        );
+    
     Object.keys(dados[variavel]).forEach(function(keys) {
-        sel2.append($("<option>").attr("value", keys).text(keys));
+        sel.append(
+            $("<option>")
+            .attr("value", keys)
+            .text(keys)
+        );
     });
-    sel2.attr("id","parametro");
-    sel2.on("change", construir_div_parametros);
+
+    sel.attr("id","parametro");
+    sel.on("change", construir_div_parametros);
+
 }
 
 function construir_div_resultados(dados_completos) {
 
     dados = dados_completos.fits
 
-    div_resultados.appendChild(buildHtmlTable(JSON.parse(dados_completos.summary)));
-    div_resultados.append(_br_.cloneNode(false));
-    div_resultados.appendChild(buildHtmlTable(JSON.parse(dados_completos.dentro)));
-    div_resultados.append(_br_.cloneNode(false));
+    var div_resultados = document.getElementById("div_resultados_col");
 
-    var lab = $("<label>").appendTo("#div_resultados")
-    .attr("for", "variavel").text("Escolha uma variável:");
-    var sel = $("<select>").appendTo("#div_resultados");
-    sel.append($("<option>").attr("hidden", true).attr("disabled", true)
-        .attr("selected", true).text("Variável"));
+    var div_tabela_summary = document.createElement("div");
+    div_tabela_summary.setAttribute("class", "row");
+    div_tabela_summary.appendChild(buildHtmlTable(JSON.parse(dados_completos.summary)));
+
+    var div_tabela_musicas = document.createElement("div");
+    div_tabela_musicas.setAttribute("class", "row");
+    div_tabela_musicas.appendChild(buildHtmlTable(JSON.parse(dados_completos.dentro)));
+
+    var div_form_variaveis = document.createElement("div");
+    div_form_variaveis.setAttribute("id", "div_form_variaveis");
+    div_form_variaveis.setAttribute("class", "form-group row");
+
+    div_resultados.appendChild(div_tabela_summary);
+    div_resultados.appendChild(div_tabela_musicas);
+    div_resultados.appendChild(div_form_variaveis);
+    
+    $("<label>")
+        .appendTo("#div_form_variaveis")
+        .attr("for", "variavel")
+        .text("Escolha uma variável:");
+
+    var sel = $("<select>")
+        .appendTo("#div_form_variaveis")
+        .append(
+            $("<option>")
+            .attr("hidden", true)
+            .attr("disabled", true)
+            .attr("selected", true)
+            .text("Variável")
+        );
+
     Object.keys(dados).forEach(function(keys) {
-        sel.append($("<option>").attr("value", keys).text(keys));
+        sel.append(
+            $("<option>")
+            .attr("value", keys)
+            .text(keys)
+        );
     });
-    sel.attr("id","variavel");
-    sel.on("change", construir_div_variaveis);
+
+    sel.attr("id","variavel")
+    sel.on("change", function() {
+        construir_div_variaveis(dados_completos.dentro);
+    });
+        
 }
 
 function mudar_playlist() {
-    div_resultados = document.getElementById("div_resultados");
+    div_resultados = document.getElementById("div_resultados_row");
     if (!(div_resultados==null)) {
         div_resultados.parentNode.removeChild(div_resultados);
     }
 
-    div_resultados = document.createElement("div");
-    div_resultados.id = "div_resultados";
-    document.body.append(div_resultados);
+    var div_resultados = document.createElement("div");
+    div_resultados.setAttribute("id", "div_resultados_row");
+    div_resultados.setAttribute("class", "row");
+    div_main = document.getElementById("div_main");
 
-    pl = $("#playlists").val();
+    var div_resultados_col = document.createElement("div");
+    div_resultados_col.setAttribute("id", "div_resultados_col");
+    div_resultados_col.setAttribute("class", "  col");
+
+    var pl = $("#playlists").val();
+    var div_titulo = document.createElement("div");
+    div_titulo.setAttribute("id", "div_titulo");
+    div_titulo.setAttribute("class", "row");
+    var titulo = document.createElement("h1");
+    titulo.appendChild(document.createTextNode(pl));
+
 
     $.get("/get_posterior", {"playlist": pl})
         .done(construir_div_resultados);
+
+    div_titulo.appendChild(titulo);
+    div_resultados_col.appendChild(div_titulo);
+    div_resultados.appendChild(div_resultados_col);
+    div_main.appendChild(div_resultados);
 }
 
 $("#playlists").on("change", mudar_playlist);
