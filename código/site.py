@@ -33,19 +33,33 @@ def posterior():
     tracks = dentro.loc[dentro.Total==True, "id"]
     if len(tracks) >= 1:
         sapi.create_playlist(tracks)
-
-    # Pegando só as variáveis importantes e transformando em JSON pro site
-    dentro = (dentro
-              .drop(["analysis_url", "id", "key", "mode", "duration_ms", "time_signature",
-                     "track_href", "type", "uri", ], axis=1)
-              .transpose()
-              .to_json())
     
+    # Fazendo o summary
     lows = pd.DataFrame(lows, index=["Limite inferior"])
     medias = pd.DataFrame(medias, index=["Média"])
     upps = pd.DataFrame(upps, index=["Limite superior"])
-    summary = pd.concat([lows, medias, upps]).transpose().to_json()
-    print(summary)
+    summary = pd.concat([lows, medias, upps])
+
+    # Pegando só as variáveis importantes
+    dentro = dentro.drop(["analysis_url", "id", "key", "mode", "duration_ms", "time_signature",
+                          "track_href", "type", "uri"], axis=1)
+
+    # Renomeando as colunas dos dfs
+    dentro.columns = map(str.title, dentro.columns)
+    summary.columns = map(str.title, summary.columns)
+
+    # Reordenando
+    dentro_cols = dentro.columns.tolist()
+    summary_cols = summary.columns.tolist()
+
+    dentro_cols = ["Título", "Artista"] + summary_cols + \
+        list(map(lambda x: x+"_Bool", summary_cols)) + ["Total"]
+
+    dentro = dentro[dentro_cols]
+
+    # Transformando em JSON pro site
+    dentro = dentro.set_index("Título").transpose().to_json()
+    summary = summary.transpose().to_json()
 
     result = {"fits": fits,
               "summary": summary,

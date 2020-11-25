@@ -1,8 +1,8 @@
 
-var _table_ = document.createElement('table'),
-    _tr_ = document.createElement('tr'),
-    _th_ = document.createElement('th'),
-    _td_ = document.createElement('td'),
+var _table_ = document.createElement("table"),
+    _tr_ = document.createElement("tr"),
+    _th_ = document.createElement("th"),
+    _td_ = document.createElement("td"),
     _br_ = document.createElement("br");
 
 function buildHtmlTable(arr) {
@@ -28,13 +28,13 @@ function buildHtmlTable(arr) {
 
         for (var j = 0, maxj = columns.length; j < maxj; ++j) {
             key_j = columns[j];
-            if (key_j.endsWith("_bool") || key_j == "Total") {
+            if (key_j.endsWith("_Bool") || key_j == "Total") {
                 continue;
             } else {
                 var td = _td_.cloneNode(false);
                 cellValue = arr[key_i][key_j];
                 td.appendChild(document.createTextNode(arr[key_i][key_j] || ''));
-                if (arr[key_i][key_j.concat("_bool")] != true && arr[key_i][key_j.concat("_bool")] != null) {
+                if (arr[key_i][key_j.concat("_Bool")] != true && arr[key_i][key_j.concat("_Bool")] != null) {
                     td.setAttribute("style", "color:#cb181d;");  // Texto vermelho pros valores fora dos IC
                 }
                 tr.appendChild(td);
@@ -57,7 +57,7 @@ function addAllColumnHeaders(arr, table) {
         key_i = Object.keys(arr)[i];
         for (var key_j in arr[key_i]) {
             if (arr[key_i].hasOwnProperty(key_j) && columnSet.indexOf(key_j) === -1) {
-                if (key_j.endsWith("_bool") || key_j == "Total") {  // Não colocar os bools no <th>
+                if (key_j.endsWith("_Bool") || key_j == "Total") {  // Não colocar os bools no <th>
                     columnSet.push(key_j);
                 } else {
                     columnSet.push(key_j);
@@ -74,14 +74,15 @@ function addAllColumnHeaders(arr, table) {
 }
 
 function json_p_array(json, coluna) {
-    arr = [];
+    var arr = [];
     for (var i = 0, l = Object.keys(json).length; i < l; i++)  {
-        arr.push(json[i][coluna]);
+        var k = Object.keys(json)[i]
+        arr.push(json[k][coluna]);
     }
     return arr;
 }
 
-function construir_div_parametros() {
+function construir_div_parametros(fits) {
     var div_parametros_row = document.getElementById("div_parametros_row");
     if (!(div_parametros_row == null)) {
         div_parametros_row.parentNode.removeChild(div_parametros_row);
@@ -91,13 +92,20 @@ function construir_div_parametros() {
     div_parametros_row.setAttribute("id", "div_parametros_row");
     div_parametros_row.setAttribute("class", "row");
     
-    div_parametros_col = document.createElement("div");
+    var div_parametros_col = document.createElement("div");
     div_parametros_col.setAttribute("id", "div_parametros_col");
     div_parametros_col.setAttribute("class", "  col");
     
-    parametro = $("#parametro option:selected").text();
+    var variavel = $("#variavel option:selected").text();
+    var parametro = $("#parametro option:selected").text();
 
-    var y = dados[variavel][parametro].map(Number);
+    console.log(fits);
+    console.log(variavel);
+    console.log(parametro);
+    console.log(fits[variavel]);
+    console.log(fits[variavel][parametro]);
+
+    var y = fits[variavel][parametro].map(Number);
 
     var div_traceplot = document.createElement("div");
     div_traceplot.setAttribute("class", "row");
@@ -108,12 +116,13 @@ function construir_div_parametros() {
     div_histograma.setAttribute("style", "width:800px;height:600px;");
     div_histograma.setAttribute("id", "histograma");
 
-    div_parametros_row.appendChild(div_parametros_col);
-
-    div_variaveis_col = document.getElementById("div_variaveis_col");
-    div_variaveis_col.appendChild(div_parametros_row);
     div_parametros_col.appendChild(div_traceplot);
     div_parametros_col.appendChild(div_histograma);
+
+    div_parametros_row.appendChild(div_parametros_col);
+
+    var div_variaveis_col = document.getElementById("div_variaveis_col");
+    div_variaveis_col.appendChild(div_parametros_row);
 
     Plotly.newPlot(div_traceplot, [{
         y: y,
@@ -126,27 +135,27 @@ function construir_div_parametros() {
     }])
 }
 
-function construir_div_variaveis(dentro) {
+function construir_div_variaveis(dentro, fits) {
     var div_variaveis_row = document.getElementById("div_variaveis_row");
     var div_parametros_row = document.getElementById("div_parametros_row");
     if(!(div_variaveis_row == null)) {
-        div_variaveis.parentNode.removeChild(div_variaveis_row);
+        div_variaveis_row.parentNode.removeChild(div_variaveis_row);
     }
     if(!(div_parametros_row == null)) {
-        div_parametros.parentNode.removeChild(div_parametros_row);
+        div_parametros_row.parentNode.removeChild(div_parametros_row);
     }
 
     div_variaveis_row = document.createElement("div");
     div_variaveis_row.setAttribute("id", "div_variaveis_row");
     div_variaveis_row.setAttribute("class", "row");
     
-    div_variaveis_col = document.createElement("div");
+    var div_variaveis_col = document.createElement("div");
     div_variaveis_col.setAttribute("id", "div_variaveis_col");
     div_variaveis_col.setAttribute("class", "  col");
 
     var div_resultados = document.getElementById("div_resultados_col");
     
-    variavel = $("#variavel option:selected").text();
+    var variavel = $("#variavel option:selected").text();
 
     var y_var = json_p_array(JSON.parse(dentro), variavel).map(Number);
 
@@ -180,16 +189,18 @@ function construir_div_variaveis(dentro) {
     div_form.setAttribute("id", "div_form_parametro");
     div_form.setAttribute("class", "form-group row");
 
+    div_variaveis_col.appendChild(div_form);
     div_variaveis_row.appendChild(div_variaveis_col);
-    div_resultados.appendChild(div_variaveis_row);    
-    div_resultados.appendChild(div_form);
+    div_resultados.appendChild(div_variaveis_row);
 
+    /*
     $("<label>").appendTo("#div_form_parametro")
         .attr("for", "parametro")
         .attr("id", "label")
         .text("Escolha um parâmetro:");
+    */
     
-    var sel = $("<select>")
+    var sel2 = $("<select>")
         .appendTo("#div_form_parametro")
         .append(
             $("<option>")
@@ -199,22 +210,25 @@ function construir_div_variaveis(dentro) {
             .text("Parâmetro")
         );
     
-    Object.keys(dados[variavel]).forEach(function(keys) {
-        sel.append(
+    Object.keys(fits[variavel]).forEach(function(keys) {
+        sel2.append(
             $("<option>")
             .attr("value", keys)
             .text(keys)
         );
     });
 
-    sel.attr("id","parametro");
-    sel.on("change", construir_div_parametros);
+    sel2.attr("id","parametro");
+    div_form.scrollIntoView({behavior: "smooth", block: "center"});
+    sel2.on("change", function() {
+        construir_div_parametros(fits);
+    });
 
 }
 
 function construir_div_resultados(dados_completos) {
 
-    dados = dados_completos.fits
+    var dados = dados_completos.fits;
 
     var div_resultados = document.getElementById("div_resultados_col");
 
@@ -234,10 +248,12 @@ function construir_div_resultados(dados_completos) {
     div_resultados.appendChild(div_tabela_musicas);
     div_resultados.appendChild(div_form_variaveis);
     
+    /*
     $("<label>")
         .appendTo("#div_form_variaveis")
         .attr("for", "variavel")
         .text("Escolha uma variável:");
+    */
 
     var sel = $("<select>")
         .appendTo("#div_form_variaveis")
@@ -258,8 +274,9 @@ function construir_div_resultados(dados_completos) {
     });
 
     sel.attr("id","variavel")
+    div_form_variaveis.scrollIntoView({behavior: "smooth", block: "center"});
     sel.on("change", function() {
-        construir_div_variaveis(dados_completos.dentro);
+        construir_div_variaveis(dados_completos.dentro, dados);
     });
         
 }

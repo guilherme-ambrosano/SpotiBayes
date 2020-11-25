@@ -171,14 +171,14 @@ def get_posterioris(api, playlist=None, boxplot=False):
     bools_dic = {}
     for var in VARIAVEIS:
         result_dict, low, media, upp, bools = rodar_stan(var, VARIAVEIS[var], dados)
-        fits.update({var: result_dict})
+        fits.update({var.title(): result_dict})
         lows.update({var: low})
         medias.update({var: media})
         upps.update({var: upp})
         bools_dic.update({var: bools})
     
     if playlist is not None:
-        feats_playlist["titulo"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
+        feats_playlist["título"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
         feats_playlist["artista"] = feats_playlist.id.map(lambda row: ", ".join([artista["name"] for artista in api.sp.track(row)["artists"]]))
     else:
         feats_playlist = None
