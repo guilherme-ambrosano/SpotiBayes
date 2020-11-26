@@ -57,8 +57,12 @@ def posterior():
 
     dentro = dentro[dentro_cols]
 
+    # pd.DataFrame.from_dict(fits).to_csv("../fits_" + playlist.replace(" ", "_") + ".csv")
+    # dentro.to_csv("../dentro_" + playlist.replace(" ", "_") + ".csv")
+    # summary.to_csv("../summary_" + playlist.replace(" ", "_") + ".csv")
+
     # Transformando em JSON pro site
-    dentro = dentro.set_index("Título").transpose().to_json()
+    dentro = dentro.transpose().to_json()
     summary = summary.transpose().to_json()
 
     result = {"fits": fits,

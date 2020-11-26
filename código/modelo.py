@@ -42,18 +42,18 @@ def carregar_modelo(dist):
 
 def rodar_stan(var, dist, df):
     if dist == "beta_infl_zero":
-        uns_zeros = np.c_[np.array(df.loc[:,var].between(0.1, 0.9)).astype(int),
-                          np.array(df.loc[:,var] > 0.9).astype(int),
-                          np.array(df.loc[:,var] < 0.1).astype(int)]
+        uns_zeros = np.c_[np.array(df.loc[:,var].between(0.01, 0.99)).astype(int),
+                          np.array(df.loc[:,var] > 0.99).astype(int),
+                          np.array(df.loc[:,var] < 0.01).astype(int)]
         dados_stan =  {"n": len(df.index),
                        # m -> numero de musicas que nao sao 0 nem 1
-                       "m": len(df.loc[df.loc[:,var].between(0.1, 0.9)].index),
+                       "m": len(df.loc[df.loc[:,var].between(0.01, 0.99)].index),
                        # uns e zeros -> primeira coluna: nem 0 nem 1,
                        #                segunda coluna:  uns
                        #                terceira coluna: zeros
                        "uns_zeros": uns_zeros.transpose(),
                        # musicas -> musicas que nao sao 0 nem 1
-                       "musicas": df.loc[df.loc[:,var].between(0.1, 0.9), var]
+                       "musicas": df.loc[df.loc[:,var].between(0.01, 0.99), var]
                       }
 
     else:
