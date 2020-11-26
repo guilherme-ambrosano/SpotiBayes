@@ -13,6 +13,10 @@ def home():
     playlists = sapi.get_playlists()
     return render_template("index.html", playlists=playlists)
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 @app.route("/get_posterior")
 def posterior():
     playlist = request.args.get("playlist")

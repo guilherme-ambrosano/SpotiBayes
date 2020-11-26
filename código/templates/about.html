@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% set home_active = '' %}
+{% set about_active = 'active' %}
+
+{% block about %}
+<span class="sr-only">(current)</span>
+{% endblock %}
+
+{% block body %}
+        <div class="row d-flex justify-content-center container-fluid">
+            <div id="div_main" class="col col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content">
+                <h1>Sobre o SpotiBayes</h1>
+                <p>O SpotiBayes é um projeto desenvolvido para a disciplina LCE5813 - Introdução à Inferência Bayesiana</p>
+            </div>
+        </div>
+        
+{% endblock %}
