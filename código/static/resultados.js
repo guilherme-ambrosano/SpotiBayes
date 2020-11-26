@@ -73,6 +73,14 @@ function addAllColumnHeaders(arr, table) {
     return columnSet;
 }
 
+function getAllIndexes(arr, val) {
+    var indexes = [], i = -1;
+    while ((i = arr.indexOf(val, i+1)) != -1){
+        indexes.push(i);
+    }
+    return indexes;
+}
+
 function json_p_array(json, coluna) {
     var arr = [];
     for (var i = 0, l = Object.keys(json).length; i < l; i++)  {
@@ -186,9 +194,15 @@ function construir_div_variaveis(dentro, fits) {
             return item != null;
         });
 
-    var selected = y_var_selected.map(function(item) {
-        return y_var.indexOf(item)
-    });
+    var selected = [];
+    
+    for (var i = 0, maxi = y_var_selected.length; i < maxi; i++) {
+        indices = getAllIndexes(y_var, y_var_selected[i]);
+        for (var j = 0, maxj = indices.length; j < maxj; j++) {
+            selected.push(indices[j]);
+        }
+    }
+
     console.log(selected);
 
     var div_boxplot = document.createElement("div");
