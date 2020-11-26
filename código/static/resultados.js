@@ -108,11 +108,11 @@ function construir_div_parametros(fits) {
     var y = fits[variavel][parametro].map(Number);
 
     var div_traceplot = document.createElement("div");
-    div_traceplot.setAttribute("class", "row");
-    div_traceplot.setAttribute("style", "width:800px;height:600px;");
+    div_traceplot.setAttribute("class", "row justify-content-center");
+    div_traceplot.setAttribute("style", "width:800px;height:600px;float:none;margin:0auto;");
     div_traceplot.setAttribute("id", "traceplot");
     var div_histograma = document.createElement("div");
-    div_histograma.setAttribute("class", "row");
+    div_histograma.setAttribute("class", "row justify-content-center");
     div_histograma.setAttribute("style", "width:800px;height:600px;");
     div_histograma.setAttribute("id", "histograma");
 
@@ -158,13 +158,26 @@ function construir_div_variaveis(dentro, fits) {
     var variavel = $("#variavel option:selected").text();
 
     var y_var = json_p_array(JSON.parse(dentro), variavel).map(Number);
+    var titulos_texto = json_p_array(JSON.parse(dentro), "Título");
+    var y_var_selected = json_p_array(JSON.parse(dentro), variavel.concat("_Bool"))
+        .map(function(item, i) {
+            if (item) {
+                return y_var[i];
+            }
+            return null;
+        })
+        .filter(function(item) {
+            return item != null;
+        });
+
+    var selected = var_y.index(y_var_selected);
 
     var div_boxplot = document.createElement("div");
-    div_boxplot.setAttribute("class", "row");
+    div_boxplot.setAttribute("class", "row justify-content-center");
     div_boxplot.setAttribute("style", "width:800px;height:600px;");
     div_boxplot.setAttribute("id", "boxplot");
     var div_histograma_var = document.createElement("div");
-    div_histograma_var.setAttribute("class", "row");
+    div_histograma_var.setAttribute("class", "row justify-content-center");
     div_histograma_var.setAttribute("style", "width:800px;height:600px;");
     div_histograma_var.setAttribute("id", "histograma_var");
 
@@ -173,7 +186,9 @@ function construir_div_variaveis(dentro, fits) {
 
     Plotly.newPlot(div_boxplot, [{
         y: y_var,
+        text: titulos_texto,
         boxpoints: "all",
+        selectedpoints: selected,
         jitter: 0.3,
         pointpos: -1.8,
         name: "",

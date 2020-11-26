@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt">
     <head>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
@@ -10,6 +11,32 @@
         <title>SpotiBayes</title>
     </head>
     <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+            <div class="container">
+              <a class="navbar-brand" href="#">
+                    <img src="{{ url_for('static', filename='logo2_full.png') }}" width="150" height="50" alt="">
+                  </a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                  </button>
+              <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                  <li class="nav-item {{ home_active }}">
+                    <a class="nav-link" href="/">Home
+                        {% block home %}
+                        {% endblock %}
+                        </a>
+                  </li>
+                  <li class="nav-item  {{ about_active }}">
+                    <a class="nav-link" href="/about">Sobre
+                        {% block about %}
+                        {% endblock %}
+                        </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
         {% block body %}
         {% endblock %}
     </body>

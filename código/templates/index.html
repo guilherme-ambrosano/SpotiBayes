@@ -1,9 +1,16 @@
 {% extends "layout.html" %}
 
+{% set home_active = 'active' %}
+{% set about_active = '' %}
+
+{% block home %}
+<span class="sr-only">(current)</span>
+{% endblock %}
+
 {% block body %}
 
-        <div class="d-flex justify-content-center container-fluid">
-            <div id="div_main" class="col">
+        <div class="row d-flex justify-content-center container-fluid">
+            <div id="div_main" class="col col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content">
                 <div class="form-group row">
                     <select name="playlists" id="playlists">
                         <option hidden disabled selected value> Playlist </option>
@@ -15,6 +22,6 @@
             </div>
         </div>
 
-        <script src="../static/resultados.js"></script>
+        <script src="{{ url_for('static', filename='resultados.js') }}"></script>
         
 {% endblock %}
