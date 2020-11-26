@@ -99,11 +99,19 @@ function construir_div_parametros(fits) {
     var variavel = $("#variavel option:selected").text();
     var parametro = $("#parametro option:selected").text();
 
-    console.log(fits);
-    console.log(variavel);
-    console.log(parametro);
-    console.log(fits[variavel]);
-    console.log(fits[variavel][parametro]);
+    var div_titulo = document.createElement("div");
+    div_titulo.setAttribute("id", "div_titulo");
+    div_titulo.setAttribute("class", "row");
+    var titulo = document.createElement("h2");
+    var soma = 0;
+    for(var i = 0; i < fits[variavel][parametro].length; i++ ){
+        soma += fits[variavel][parametro][i];
+    }
+    var media = soma/fits[variavel][parametro].length;
+    var parametro_txt = parametro.concat(": ").concat(media.toString());
+    titulo.appendChild(document.createTextNode(parametro_txt));
+    div_titulo.appendChild(titulo);
+    div_parametros_col.appendChild(div_titulo);
 
     var y = fits[variavel][parametro].map(Number);
 
@@ -157,6 +165,14 @@ function construir_div_variaveis(dentro, fits) {
     
     var variavel = $("#variavel option:selected").text();
 
+    var div_titulo = document.createElement("div");
+    div_titulo.setAttribute("id", "div_titulo");
+    div_titulo.setAttribute("class", "row");
+    var titulo = document.createElement("h2");
+    titulo.appendChild(document.createTextNode(variavel));
+    div_titulo.appendChild(titulo);
+    div_variaveis_col.appendChild(div_titulo);
+
     var y_var = json_p_array(JSON.parse(dentro), variavel).map(Number);
     var titulos_texto = json_p_array(JSON.parse(dentro), "Título");
     var y_var_selected = json_p_array(JSON.parse(dentro), variavel.concat("_Bool"))
@@ -170,7 +186,10 @@ function construir_div_variaveis(dentro, fits) {
             return item != null;
         });
 
-    var selected = var_y.index(y_var_selected);
+    var selected = y_var_selected.map(function(item) {
+        return y_var.indexOf(item)
+    });
+    console.log(selected);
 
     var div_boxplot = document.createElement("div");
     div_boxplot.setAttribute("class", "row justify-content-center");
@@ -189,6 +208,16 @@ function construir_div_variaveis(dentro, fits) {
         text: titulos_texto,
         boxpoints: "all",
         selectedpoints: selected,
+        selected: {
+          marker: {
+            color: '#b3cde3'
+          }
+        },
+        unselected: {
+          marker: {
+            color: '#fbb4ae'
+          }
+        },
         jitter: 0.3,
         pointpos: -1.8,
         name: "",
