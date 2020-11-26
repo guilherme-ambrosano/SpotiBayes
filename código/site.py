@@ -1,5 +1,5 @@
 import pandas as pd
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, abort
 
 from API import API_spotify
 from modelo import get_posterioris
@@ -21,7 +21,10 @@ def about():
 def posterior():
     playlist = request.args.get("playlist")
     print(playlist)
-    fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
+    try:
+        fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
+    except:
+        abort(400)
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     bools_df = pd.DataFrame(bools_dic)

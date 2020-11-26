@@ -285,6 +285,10 @@ function construir_div_variaveis(dentro, fits) {
 }
 
 function construir_div_resultados(dados_completos) {
+    var div_loading = document.getElementById("loading");
+    if (!(div_loading==null)) {
+        div_loading.parentNode.removeChild(div_loading);
+    }
 
     var dados = dados_completos.fits;
 
@@ -339,6 +343,22 @@ function construir_div_resultados(dados_completos) {
         
 }
 
+
+function construir_div_error(dados_completos) {
+    var div_loading = document.getElementById("loading");
+    if (!(div_loading==null)) {
+        div_loading.parentNode.removeChild(div_loading);
+    }
+
+    var div_resultados = document.getElementById("div_resultados_col");
+
+    var div_erro = document.createElement("div");
+    div_erro.setAttribute("class", "row");
+    div_erro.appendChild(document.createTextNode("Erro ao carregar a playlist."));
+
+    div_resultados.appendChild(div_erro);
+}
+
 function mudar_playlist() {
     div_resultados = document.getElementById("div_resultados_row");
     if (!(div_resultados==null)) {
@@ -361,12 +381,24 @@ function mudar_playlist() {
     var titulo = document.createElement("h1");
     titulo.appendChild(document.createTextNode(pl));
 
+    var div_loading = document.createElement("div");
+    div_loading.setAttribute("id", "loading");
+    div_loading.setAttribute("class", "spinner-border");
+    div_loading.setAttribute("role", "status");
+
+    var loading = document.createElement("span");
+    loading.setAttribute("class", "sr-only");
+    loading.appendChild(document.createTextNode("Loading..."));
+
+    div_loading.appendChild(loading);
 
     $.get("/get_posterior", {"playlist": pl})
-        .done(construir_div_resultados);
+        .done(construir_div_resultados)
+        .fail(construir_div_error);
 
     div_titulo.appendChild(titulo);
     div_resultados_col.appendChild(div_titulo);
+    div_resultados_col.appendChild(div_loading);
     div_resultados.appendChild(div_resultados_col);
     div_main.appendChild(div_resultados);
 }
