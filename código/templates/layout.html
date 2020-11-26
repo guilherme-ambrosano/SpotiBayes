@@ -2,18 +2,20 @@
 <html lang="pt">
     <head>
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css">
         <title>SpotiBayes</title>
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
             <div class="container">
-              <a class="navbar-brand" href="#">
+              <a class="navbar-brand" href="/">
                     <img src="{{ url_for('static', filename='logo2_full.png') }}" width="150" height="50" alt="">
                   </a>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,5 +41,33 @@
         </nav>
         {% block body %}
         {% endblock %}
+        <footer class="page-footer font-small stylish-color-dark pt-4",
+            style="padding-top:80px;padding-bottom:50px;box-shadow: 0 50vh 0 50vh #3E4551;">
+
+            <!-- Footer Elements -->
+            <div class="container text-center text-md-left">
+                <div class="row">
+                    <div class="col-md-2 mx-auto">
+                        <a class="navbar-brand" href="/">
+                            <img src="{{ url_for('static', filename='logo2_full.png') }}" width="150" height="50" alt="">
+                        </a>
+                    </div>
+                    <hr class="clearfix w-100 d-md-none">
+                    <div class="col-md-2 mx-auto">
+                        <ul class="list-unstyled">
+                            <li>
+                                <a href="https://github.com/guilherme-ambrosano"target="_blank">Github</a>
+                            </li>
+                            <li>
+                                <a href="http://lattes.cnpq.br/1964349025366125" target="_blank">Lattes</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+          
+            </div>
+            <!-- Footer Elements -->
+                    
+        </footer>
     </body>
 </html>
