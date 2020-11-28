@@ -2,3 +2,4 @@ config
 .cache
 *.pkl
 __pycache__/
+*.csv

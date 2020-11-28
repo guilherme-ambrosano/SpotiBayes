@@ -9,7 +9,7 @@
 
 {% block body %}
 
-        <div class="row d-flex justify-content-center container-fluid">
+        <div class="row d-flex justify-content-center container-fluid min-vh-100">
             <div id="div_main" class="col col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content">
                 <div class="form-group row">
                     <select name="playlists" id="playlists">
@@ -21,7 +21,9 @@
                 </div>
             </div>
         </div>
-
-        <script src="{{ url_for('static', filename='resultados.js') }}"></script>
         
+{% endblock %}
+
+{% block script %}
+    <script src="{{ url_for('static', filename='resultados.js') }}"></script>
 {% endblock %}

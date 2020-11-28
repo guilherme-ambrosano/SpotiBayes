@@ -1,5 +1,7 @@
 
 var _table_ = document.createElement("table"),
+    _thead_ = document.createElement("thead"),
+    _tbody_ = document.createElement("tbody"),
     _tr_ = document.createElement("tr"),
     _th_ = document.createElement("th"),
     _td_ = document.createElement("td"),
@@ -7,7 +9,9 @@ var _table_ = document.createElement("table"),
 
 function buildHtmlTable(arr) {
     var table = _table_.cloneNode(false);
-    table.setAttribute("class", "table table-bordered");
+    table.setAttribute("class", "table table-bordered table-striped table-sm");
+    table.setAttribute("id", "tabela_musicas");
+    var tbody = _tbody_.cloneNode(false);
 
     var columns = addAllColumnHeaders(arr, table);  // Nomes das colunas vão no <th>
 
@@ -40,8 +44,9 @@ function buildHtmlTable(arr) {
                 tr.appendChild(td);
             }
         }
-        table.appendChild(tr);
+        tbody.appendChild(tr);
     }
+    table.appendChild(tbody);
     return table;
 }
             
@@ -50,6 +55,7 @@ function addAllColumnHeaders(arr, table) {
     var columnSet = [];
     var tr = _tr_.cloneNode(false);
     var th = _th_.cloneNode(false);
+    var thead = _thead_.cloneNode(false);
     th.setAttribute("scope", "col");
     th.appendChild(document.createTextNode(""));
     tr.appendChild(th);
@@ -69,7 +75,8 @@ function addAllColumnHeaders(arr, table) {
             }
         }
     }
-    table.appendChild(tr);
+    thead.appendChild(tr);
+    table.appendChild(thead);
     return columnSet;
 }
 
@@ -125,11 +132,11 @@ function construir_div_parametros(fits) {
 
     var div_traceplot = document.createElement("div");
     div_traceplot.setAttribute("class", "row justify-content-center");
-    div_traceplot.setAttribute("style", "width:800px;height:600px;float:none;margin:0auto;");
+    div_traceplot.setAttribute("style", "width:800px;height:600px;float:none;margin:0 auto;");
     div_traceplot.setAttribute("id", "traceplot");
     var div_histograma = document.createElement("div");
     div_histograma.setAttribute("class", "row justify-content-center");
-    div_histograma.setAttribute("style", "width:800px;height:600px;");
+    div_histograma.setAttribute("style", "width:800px;height:600px;float:none;margin:0 auto;");
     div_histograma.setAttribute("id", "histograma");
 
     div_parametros_col.appendChild(div_traceplot);
@@ -207,11 +214,11 @@ function construir_div_variaveis(dentro, fits) {
 
     var div_boxplot = document.createElement("div");
     div_boxplot.setAttribute("class", "row justify-content-center");
-    div_boxplot.setAttribute("style", "width:800px;height:600px;");
+    div_boxplot.setAttribute("style", "width:700px;height:450px;float:none;margin:0 auto;");
     div_boxplot.setAttribute("id", "boxplot");
     var div_histograma_var = document.createElement("div");
     div_histograma_var.setAttribute("class", "row justify-content-center");
-    div_histograma_var.setAttribute("style", "width:800px;height:600px;");
+    div_histograma_var.setAttribute("style", "width:700px;height:450px;float:none;margin:0 auto;");
     div_histograma_var.setAttribute("id", "histograma_var");
 
     div_variaveis_col.appendChild(div_boxplot);
@@ -250,13 +257,6 @@ function construir_div_variaveis(dentro, fits) {
     div_variaveis_col.appendChild(div_form);
     div_variaveis_row.appendChild(div_variaveis_col);
     div_resultados.appendChild(div_variaveis_row);
-
-    /*
-    $("<label>").appendTo("#div_form_parametro")
-        .attr("for", "parametro")
-        .attr("id", "label")
-        .text("Escolha um parâmetro:");
-    */
     
     var sel2 = $("<select>")
         .appendTo("#div_form_parametro")
@@ -285,7 +285,7 @@ function construir_div_variaveis(dentro, fits) {
 }
 
 function construir_div_resultados(dados_completos) {
-    var div_loading = document.getElementById("loading");
+    var div_loading = document.getElementById("div_loading");
     if (!(div_loading==null)) {
         div_loading.parentNode.removeChild(div_loading);
     }
@@ -294,28 +294,24 @@ function construir_div_resultados(dados_completos) {
 
     var div_resultados = document.getElementById("div_resultados_col");
 
-    var div_tabela_summary = document.createElement("div");
-    div_tabela_summary.setAttribute("class", "row");
-    div_tabela_summary.appendChild(buildHtmlTable(JSON.parse(dados_completos.summary)));
-
     var div_tabela_musicas = document.createElement("div");
+    var div_tabela_musicas_col = document.createElement("div");
     div_tabela_musicas.setAttribute("class", "row");
-    div_tabela_musicas.appendChild(buildHtmlTable(JSON.parse(dados_completos.dentro)));
+    div_tabela_musicas_col.appendChild(buildHtmlTable(JSON.parse(dados_completos.dentro)));
+    div_tabela_musicas.appendChild(div_tabela_musicas_col);
 
     var div_form_variaveis = document.createElement("div");
     div_form_variaveis.setAttribute("id", "div_form_variaveis");
     div_form_variaveis.setAttribute("class", "form-group row");
 
-    div_resultados.appendChild(div_tabela_summary);
     div_resultados.appendChild(div_tabela_musicas);
     div_resultados.appendChild(div_form_variaveis);
     
-    /*
-    $("<label>")
-        .appendTo("#div_form_variaveis")
-        .attr("for", "variavel")
-        .text("Escolha uma variável:");
-    */
+    $('#tabela_musicas').DataTable({
+        "scrollY": "50vh",
+        "scrollCollapse": true,
+        });
+    $('.dataTables_length').addClass('bs-select');
 
     var sel = $("<select>")
         .appendTo("#div_form_variaveis")
@@ -345,7 +341,7 @@ function construir_div_resultados(dados_completos) {
 
 
 function construir_div_error(dados_completos) {
-    var div_loading = document.getElementById("loading");
+    var div_loading = document.getElementById("div_loading");
     if (!(div_loading==null)) {
         div_loading.parentNode.removeChild(div_loading);
     }
@@ -353,7 +349,7 @@ function construir_div_error(dados_completos) {
     var div_resultados = document.getElementById("div_resultados_col");
 
     var div_erro = document.createElement("div");
-    div_erro.setAttribute("class", "row");
+    div_erro.setAttribute("class", "row my-4");
     div_erro.appendChild(document.createTextNode("Erro ao carregar a playlist."));
 
     div_resultados.appendChild(div_erro);
@@ -382,15 +378,19 @@ function mudar_playlist() {
     titulo.appendChild(document.createTextNode(pl));
 
     var div_loading = document.createElement("div");
-    div_loading.setAttribute("id", "loading");
-    div_loading.setAttribute("class", "spinner-border");
-    div_loading.setAttribute("role", "status");
+    div_loading.setAttribute("id", "div_loading");
+    div_loading.setAttribute("class", "row d-flex min-vh-100 justify-content-center align-items-center");
+
+    var spinner = document.createElement("div");
+    spinner.setAttribute("class", "spinner-border");
+    spinner.setAttribute("role", "status");
 
     var loading = document.createElement("span");
     loading.setAttribute("class", "sr-only");
     loading.appendChild(document.createTextNode("Loading..."));
 
-    div_loading.appendChild(loading);
+    spinner.appendChild(loading);
+    div_loading.appendChild(spinner);
 
     $.get("/get_posterior", {"playlist": pl})
         .done(construir_div_resultados)
@@ -404,3 +404,6 @@ function mudar_playlist() {
 }
 
 $("#playlists").on("change", mudar_playlist);
+
+$(document).ready(function () {
+    });
