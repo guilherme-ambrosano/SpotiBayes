@@ -3,9 +3,9 @@ data {
   vector[n] musicas;
 }
 parameters {
-  real playlist_mu;
-  real<lower=0> playlist_sigma;
+  real mu;
+  real<lower=0> sigma;
 }
 model {
-  musicas ~ normal(playlist_mu, playlist_sigma);
+  musicas ~ normal(mu, sigma);
 }

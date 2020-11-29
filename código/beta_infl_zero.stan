@@ -5,13 +5,13 @@ data {
   vector[m] musicas;
 }
 parameters {  
-  simplex[3] playlist_theta;
-  real<lower=0> playlist_alpha;
-  real<lower=0> playlist_beta;
+  simplex[3] theta;
+  real<lower=0> alpha;
+  real<lower=0> beta;
 }
 model {
   for (i in 1:n)
-    uns_zeros[,i] ~ multinomial(playlist_theta);
+    uns_zeros[,i] ~ multinomial(theta);
 
-  musicas ~ beta(playlist_alpha, playlist_beta);
+  musicas ~ beta(alpha, beta);
 }

@@ -69,7 +69,7 @@ def rodar_stan(var, dist, df):
     
     # Pegando só os parametros da playlist
     for par in odict.copy():
-        if not par.startswith("playlist_"):
+        if par.startswith("lp"):
             odict.pop(par)
 
     # o theta tem 3 colunas - isso vai dar pau depois

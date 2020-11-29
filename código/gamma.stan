@@ -3,9 +3,9 @@ data {
   vector[n] musicas;
 }
 parameters {
-  real<lower=0> playlist_alpha;
-  real<lower=0> playlist_beta;
+  real<lower=0> alpha;
+  real<lower=0> beta;
 }
 model {
-  musicas ~ gamma(playlist_alpha, playlist_beta);
+  musicas ~ gamma(alpha, beta);
 }
