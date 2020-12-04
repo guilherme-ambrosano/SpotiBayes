@@ -27,6 +27,7 @@ class API_spotify:
         if self.client_id is not None and \
             self.client_secret is not None and \
                 self.redirect_uri is not None:
+
             self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=self.scope,
                                                                 client_id=self.client_id,
                                                                 client_secret=self.client_secret,
