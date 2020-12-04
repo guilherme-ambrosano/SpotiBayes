@@ -2,10 +2,15 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
+from setup import setup
+
 class API_spotify:
     def __init__(self):
         self.scope = "user-read-recently-played user-modify-playback-state "\
             "playlist-read-private playlist-read-collaborative playlist-modify-public"
+        
+        if not os.path.isfile(os.path.join(".", "config")):
+            setup()
 
         with open(os.path.join(".", "config"), "r") as file:
             self.client_id = file.readline().split("=")[1].strip()

@@ -76,5 +76,3 @@ def posterior():
               "summary": summary,
               "dentro": dentro}
     return jsonify(result)
-
-app.run()

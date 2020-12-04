@@ -9,6 +9,8 @@ from scipy.stats import norm
 import pystan
 import pickle
 
+import os
+
 from API import API_spotify
 
 
@@ -31,11 +33,11 @@ def preprocess(df):
 
 def carregar_modelo(dist):
     try:
-        sm = pickle.load(open(dist+".pkl", 'rb'))
+        sm = pickle.load(open(os.path.join(".", "Stan", dist+".pkl"), 'rb'))
         return sm
     except:
-        sm = pystan.StanModel(dist+".stan", verbose=False)
-        with open(dist+".pkl", 'wb') as f:
+        sm = pystan.StanModel(os.path.join(".", "Stan", dist+".stan"), verbose=False)
+        with open(os.path.join(".", "Stan", dist+".pkl"), 'wb') as f:
             pickle.dump(sm, f)
         return sm
 
