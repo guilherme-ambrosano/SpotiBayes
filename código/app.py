@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from flask import Flask, render_template, request, jsonify, abort
 
@@ -64,9 +65,9 @@ def posterior():
 
     dentro = dentro[dentro_cols]
 
-    pd.DataFrame.from_dict(fits).to_csv("../fits.csv")
-    dentro.to_csv("../dentro.csv")
-    summary.to_csv("../summary.csv")
+    pd.DataFrame.from_dict(fits).to_csv(os.path.join(".", "fits.csv"))
+    dentro.to_csv(os.path.join(".", "dentro.csv"))
+    summary.to_csv(os.path.join(".", "summary.csv"))
 
     # Transformando em JSON pro site
     dentro = dentro.transpose().to_json()
