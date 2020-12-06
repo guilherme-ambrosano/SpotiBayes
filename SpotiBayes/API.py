@@ -2,24 +2,32 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-from setup import setup
+from SpotiBayes.config import config
+
+PASTA = os.path.dirname(__file__)
+
+client_id=None
+client_secret=None
+redirect_uri=None
+
+try:
+    from SpotiBayes.api_info import *
+except:
+    config()
+    from SpotiBayes.api_info import *
 
 class API_spotify:
     def __init__(self):
         self.scope = "user-read-recently-played user-modify-playback-state "\
             "playlist-read-private playlist-read-collaborative playlist-modify-public"
-        
-        if not os.path.isfile(os.path.join(".", "config")):
-            setup()
-
-        with open(os.path.join(".", "config"), "r") as file:
-            self.client_id = file.readline().split("=")[1].strip()
-            self.client_secret = file.readline().split("=")[1].strip()
-            self.redirect_uri = file.readline().split("=")[1].strip()
-        
+                
         self.sp = None
         self.playlist = None
         self.playlist_id = None
+
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
 
         self.auth()
     

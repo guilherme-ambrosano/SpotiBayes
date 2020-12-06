@@ -1,5 +1,9 @@
-config
+api_info.py
 .cache
 *.pkl
 __pycache__/
 *.csv
+.vscode/
+SpotiBayes_guilherme_ambrosano.egg-info/
+build/
+dist/

@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from scipy.stats import beta as Beta
 from scipy.stats import gamma
@@ -11,8 +10,10 @@ import pickle
 
 import os
 
-from API import API_spotify
+from SpotiBayes.API import API_spotify
 
+
+PASTA = os.path.dirname(__file__)
 
 VARIAVEIS = {"danceability":     "beta_infl_zero",
              "energy":           "beta_infl_zero",
@@ -33,11 +34,11 @@ def preprocess(df):
 
 def carregar_modelo(dist):
     try:
-        sm = pickle.load(open(os.path.join(".", "Stan", dist+".pkl"), 'rb'))
+        sm = pickle.load(open(os.path.join(PASTA, "Stan", dist+".pkl"), 'rb'))
         return sm
     except:
-        sm = pystan.StanModel(os.path.join(".", "Stan", dist+".stan"), verbose=False)
-        with open(os.path.join(".", "Stan", dist+".pkl"), 'wb') as f:
+        sm = pystan.StanModel(os.path.join(PASTA, "Stan", dist+".stan"), verbose=False)
+        with open(os.path.join(PASTA, "Stan", dist+".pkl"), 'wb') as f:
             pickle.dump(sm, f)
         return sm
 
@@ -145,27 +146,13 @@ def rodar_stan(var, dist, df):
     
     return result_dict, low, media, upp, bools
 
-def get_posterioris(api, playlist=None, boxplot=False):
+def get_posterioris(api, playlist=None):
     if playlist is not None:
         api.set_playlist(playlist)
         feats_playlist = pd.DataFrame.from_dict(api.get_songs_from_playlist())
         dados = preprocess(feats_playlist)
     else:
         dados = preprocess(pd.DataFrame.from_dict(api.get_recently_played()))
-
-    if boxplot:
-        # Boxplots
-        plt.subplots_adjust(hspace=0.5, wspace=0.4)
-        for i in range(len(dados.columns)):
-            plt.subplot(3, 3, i+1)
-            var = dados.columns[i]
-            y = dados.loc[:, var]
-            x = np.random.normal(1, 0.04, size=len(y))
-
-            plt.boxplot(y)
-            plt.plot(x, y, "r.", alpha=0.1)
-            plt.title(var)
-        plt.show()
     
     fits = {}
     lows = {}
@@ -187,14 +174,3 @@ def get_posterioris(api, playlist=None, boxplot=False):
         feats_playlist = None
     
     return fits, lows, medias, upps, bools_dic, feats_playlist
-
-
-if __name__ == "__main__":
-    sapi = API_spotify()
-
-    playlist = "teste"
-    fits, _, _, _, bools_dic, dados = get_posterioris(sapi, playlist, False)
-    bools_df = pd.DataFrame.from_dict(bools_dic)
-    bools_df.columns = [col + '_bool' for col in bools_df.columns]
-
-    dentro = pd.concat([dados, bools_df], axis=1)

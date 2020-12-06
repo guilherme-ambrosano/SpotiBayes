@@ -2,12 +2,21 @@ import os
 import pandas as pd
 from flask import Flask, render_template, request, jsonify, abort
 
-from API import API_spotify
-from modelo import get_posterioris
+from SpotiBayes.API import API_spotify
+from SpotiBayes.modelo import get_posterioris
 
 
-app = Flask(__name__)
+PASTA = os.path.dirname(__file__)
+
+if not os.path.isfile(os.path.join(PASTA, ".cache")):
+    API_spotify()
+
 sapi = API_spotify()
+
+template_folder = os.path.join(PASTA, 'templates')
+static_folder = os.path.join(PASTA, 'static')
+app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+
 
 @app.route("/")
 def home():
@@ -21,11 +30,8 @@ def about():
 @app.route("/get_posterior")
 def posterior():
     playlist = request.args.get("playlist")
-    print(playlist)
-    try:
-        fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
-    except:
-        abort(400)
+    
+    fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     bools_df = pd.DataFrame(bools_dic)
@@ -65,9 +71,9 @@ def posterior():
 
     dentro = dentro[dentro_cols]
 
-    pd.DataFrame.from_dict(fits).to_csv(os.path.join(".", "fits.csv"))
-    dentro.to_csv(os.path.join(".", "dentro.csv"))
-    summary.to_csv(os.path.join(".", "summary.csv"))
+    pd.DataFrame.from_dict(fits).to_csv(os.path.join(PASTA, "fits.csv"))
+    dentro.to_csv(os.path.join(PASTA, "dentro.csv"))
+    summary.to_csv(os.path.join(PASTA, "summary.csv"))
 
     # Transformando em JSON pro site
     dentro = dentro.transpose().to_json()
@@ -77,3 +83,7 @@ def posterior():
               "summary": summary,
               "dentro": dentro}
     return jsonify(result)
+
+
+if __name__ == "__main__":
+    app.run()

@@ -356,6 +356,7 @@ function construir_div_error(dados_completos) {
 }
 
 function mudar_playlist() {
+
     div_resultados = document.getElementById("div_resultados_row");
     if (!(div_resultados==null)) {
         div_resultados.parentNode.removeChild(div_resultados);
@@ -404,6 +405,3 @@ function mudar_playlist() {
 }
 
 $("#playlists").on("change", mudar_playlist);
-
-$(document).ready(function () {
-    });
