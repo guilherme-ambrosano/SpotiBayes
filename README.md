@@ -45,17 +45,16 @@ pip install spotipy Flask --upgrade
 6. Instale o SpotiBayes
 
 ```
-pip install -i https://test.pypi.org/simple/ SpotiBayes2-guilherme-ambrosano==0.0.7
+pip install -i https://test.pypi.org/simple/ SpotiBayes2-guilherme-ambrosano --upgrade
 ```
 
 
 # Rodando o SpotiBayes
 
-Rode os seguintes comandos no Python:
+Rode o seguinte comando no Python:
 
 ```
-from SpotiBayes.app import app
-app.run()
+import SpotiBayes
 ```
 
 Se essa for a primeira vez rodando o SpotiBayes, serão solicitados os dados da sua API.
@@ -63,5 +62,11 @@ Para registrar uma API no Spotify, siga os passos em:
 
 https://developer.spotify.com/documentation/general/guides/app-settings/
 
-Depois de preencher os detalhes da API, você deverá colar no terminal o URL para o qual foi redirecionado no seu navegador.
+Depois de preencher os detalhes da API, rode o comando:
+
+```
+SpotiBayes.app.run()
+```
+
+Se for sua primeira vez rodando o SpotiBayes, você deverá colar no terminal o URL para o qual foi redirecionado no seu navegador.
 
