@@ -2,7 +2,7 @@ import os
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
-from SpotiBayes.config import config
+from config import config
 
 PASTA = os.path.dirname(__file__)
 

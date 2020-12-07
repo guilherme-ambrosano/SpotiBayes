@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SpotiBayes-guilherme-ambrosano",
-    version="0.0.5",
+    version="0.0.1",
     author="guilhermeambrosano",
     author_email="guilherme.ambrosano@usp.br",
     description="",
@@ -18,13 +18,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
-    install_requires=[
-        "spotipy",
-        "flask",
-        "pystan",
-        "pandas",
-        "numpy",
-        "scipy"
-    ],
+    python_requires="3.8",
+    install_requires=["flask", "spotipy"],
 )

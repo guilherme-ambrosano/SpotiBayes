@@ -10,7 +10,7 @@ import pickle
 
 import os
 
-from SpotiBayes.API import API_spotify
+from API import API_spotify
 
 
 PASTA = os.path.dirname(__file__)

@@ -2,8 +2,8 @@ import os
 import pandas as pd
 from flask import Flask, render_template, request, jsonify, abort
 
-from SpotiBayes.API import API_spotify
-from SpotiBayes.modelo import get_posterioris
+from API import API_spotify
+from modelo import get_posterioris
 
 
 PASTA = os.path.dirname(__file__)
