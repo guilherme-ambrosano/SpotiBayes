@@ -29,10 +29,9 @@ def config():
 
 try:
     with open(os.path.join(PASTA, "config.txt"), "r") as config_file:
-        linhas = config_file.readlines()
-        CLIENT_ID = linhas[0]
-        CLIENT_SECRET = linhas[1]
-        REDIRECT_URI = linhas[2]
+        CLIENT_ID = config_file.readline().strip("\n").strip()
+        CLIENT_SECRET = config_file.readline().strip("\n").strip()
+        REDIRECT_URI = config_file.readline().strip("\n").strip()
 except:
     CLIENT_ID, CLIENT_SECRET, REDIRECT_URI = config()
     with open(os.path.join(PASTA, "config.txt"), "w") as config_file:
