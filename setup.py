@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SpotiBayes2-guilherme-ambrosano",
-    version="0.0.7",
+    version="0.0.8",
     author="Guilherme Ambrosano",
     author_email="guilherme.ambrosano@usp.br",
     description="",
@@ -19,5 +19,4 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=[],
 )
