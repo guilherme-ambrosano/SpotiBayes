@@ -1,4 +1,4 @@
-api_info.py
+config.txt
 .cache
 *.pkl
 __pycache__/
