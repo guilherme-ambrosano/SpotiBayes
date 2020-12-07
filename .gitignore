@@ -4,6 +4,6 @@ config.txt
 __pycache__/
 *.csv
 .vscode/
-SpotiBayes_guilherme_ambrosano.egg-info/
+SpotiBayes2_guilherme_ambrosano.egg-info/
 build/
 dist/

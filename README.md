@@ -24,7 +24,7 @@ pip install numpy==1.18.5 scipy --upgrade
 conda config --set pip_interop_enabled True
 ```
 
-3. Siga os passos de instalação do pystan:
+4. Siga os passos de instalação do pystan:
 
 https://pystan.readthedocs.io/en/latest/windows.html#windows
 
@@ -33,7 +33,7 @@ conda install libpython m2w64-toolchain -c msys2
 conda install cython matplotlib pandas pystan -c conda-forge
 ```
 
-4. Instale o spotipy e o Flask:
+5. Instale o spotipy e o Flask:
 
 https://spotipy.readthedocs.io/en/2.16.1/#installation
 https://flask.palletsprojects.com/en/1.1.x/installation/
@@ -42,13 +42,10 @@ https://flask.palletsprojects.com/en/1.1.x/installation/
 pip install spotipy Flask --upgrade
 ```
 
-5. Talvez seja necessário reinstalar os pacotes numpy e scipy usando o pip
-
-
 6. Instale o SpotiBayes
 
 ```
-pip install -i https://test.pypi.org/simple/ SpotiBayes-guilherme-ambrosano
+pip install -i https://test.pypi.org/simple/ SpotiBayes2-guilherme-ambrosano==0.0.7
 ```
 
 
