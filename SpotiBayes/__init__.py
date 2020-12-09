@@ -14,8 +14,9 @@ from scipy.stats import norm
 import pystan
 import pickle
 
-from flask import Flask, render_template, request, jsonify, abort
+import ast
 
+from flask import Flask, render_template, request, jsonify, abort
 
 PASTA = os.path.dirname(__file__)
 
@@ -366,7 +367,41 @@ def about():
 @app.route("/get_posterior")
 def posterior():
     playlist = request.args.get("playlist")
+
+    fits_file = "fits_" + playlist + ".csv"
+    summary_file = "summary_" + playlist + ".csv"
+    dentro_file = "dentro_" + playlist + ".csv"
+
+    if os.path.isfile(os.path.join(PASTA, fits_file)) and \
+        os.path.isfile(os.path.join(PASTA, summary_file)) and \
+            os.path.isfile(os.path.join(PASTA, dentro_file)):
+
+        fits = pd.read_csv(os.path.join(PASTA, fits_file), index_col=0).to_dict()
+
+        for linha in fits:
+            for coluna in list(fits[linha].keys()):
+                try:
+                    fits[linha][coluna] = ast.literal_eval(fits[linha][coluna])
+                except ValueError:
+                    fits[linha].pop(coluna)
+
+
+        summary = pd.read_csv(os.path.join(PASTA, summary_file), index_col=0)
+        dentro = pd.read_csv(os.path.join(PASTA, dentro_file), index_col=0)
+
+        dentro = dentro.transpose().to_json()
+        summary = summary.transpose().to_json()
+
+        result = {"fits": fits,
+                  "summary": summary,
+                  "dentro": dentro}
+        return jsonify(result)
     
+    arquivos = os.listdir(PASTA)
+    csv = [arquivo for arquivo in arquivos if arquivo.endswith(".csv")]
+    for arquivo in csv:
+        os.remove(os.path.join(PASTA, arquivo))
+
     fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
@@ -386,7 +421,7 @@ def posterior():
     
     # Fazendo o summary
     lows = pd.DataFrame(lows, index=["Limite inferior"])
-    medias = pd.DataFrame(medias, index=["Média"])
+    medias = pd.DataFrame(medias, index=["Media"])
     upps = pd.DataFrame(upps, index=["Limite superior"])
     summary = pd.concat([lows, medias, upps])
 
@@ -407,9 +442,9 @@ def posterior():
 
     dentro = dentro[dentro_cols]
 
-    pd.DataFrame.from_dict(fits).to_csv(os.path.join(PASTA, "fits.csv"))
-    dentro.to_csv(os.path.join(PASTA, "dentro.csv"))
-    summary.to_csv(os.path.join(PASTA, "summary.csv"))
+    pd.DataFrame.from_dict(fits).to_csv(os.path.join(PASTA, fits_file))
+    dentro.to_csv(os.path.join(PASTA, dentro_file))
+    summary.to_csv(os.path.join(PASTA, summary_file))
 
     # Transformando em JSON pro site
     dentro = dentro.transpose().to_json()
