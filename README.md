@@ -2,7 +2,10 @@
 
 Este é um projeto realizado para a disciplina LCE5813 - Introdução à Inferência Bayesiana.
 
-O SpotiBayes tem como objetivo utilizar estatística Bayesiana para auxiliar o usuário a organizar suas playlists no Spotify.
+O *SpotiBayes* tem como objetivo utilizar estatística Bayesiana para auxiliar o usuário a organizar suas playlists no Spotify.
+
+Esse *software* estima, usando uma abordagem bayesiana, os parâmetros de uma playlist com base nas estatísticas das músicas contidas nela.
+Diferentemente de outros métodos que sugerem novas músicas para incluir, o *SpotiBayes* auxilia o usuário indicando quais músicas devem ser retiradas de uma playlist, por serem muito discrepantes das demais.
 
 # Instalação
 

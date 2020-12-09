@@ -11,7 +11,130 @@
         <div class="row d-flex justify-content-center container-fluid min-vh-100">
             <div id="div_main" class="col col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content">
                 <h1>Sobre o SpotiBayes</h1>
-                <p>O SpotiBayes é um projeto desenvolvido para a disciplina LCE5813 - Introdução à Inferência Bayesiana</p>
+                <p>O <em>SpotiBayes</em> é um projeto desenvolvido para a disciplina LCE5813 - Introdução à Inferência Bayesiana</p>
+
+                <p>Esse <em>software</em> tem como objetivo utilizar estatística Bayesiana para auxiliar o usuário a organizar suas playlists no Spotify.</p>
+
+                <p> Usando uma abordagem bayesiana, são estimados os parâmetros de uma playlist com base nas estatísticas das músicas contidas nela. </p>
+                
+                <h2> Variáveis </h2>
+                
+                <p>
+                    As variáveis utilizadas pelo <em>SpotiBayes</em>, disponibilizadas pelo Spotify, são descritas abaixo. 
+                    Além disso, você pode encontrar mais informações clicando <a href="https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/" target="_blank">aqui</a>
+                </p>
+                
+
+                <h3><em>acousticness</em></h3>
+                <p> 
+                    O atributo chamado <em>acousticness</em> varia de 0 a 1, de modo que 0 sinaliza uma música que não é acústica e 1 uma música acústica.
+                    Dessa forma, o algoritmo usado pelo Spotify tem maior confiança que uma música com <em>acousticness</em> entre 0 e 0,5 não é acústica.
+                    Do mesmo modo, <em>acousticness</em> entre 0,5 e 1 indica que a música tem mais chance de ser acústica.
+                    Nos dois casos, quanto mais distante esse valor é de 0,5, maior a confiança.
+                </p>
+
+
+                <h3><em>danceability</em></h3>
+                <p> 
+                    Trata-se de um escore que mede o quão ``dançável'' é a música.
+                    Assim, essa medida varia de 0 a 1, estando mais perto de 1 as músicas mais dançáveis.
+                </p>
+
+                <h3><em>energy</em></h3>
+                <p> 
+                    Um escore de quão perceptivamente ``energética'' é a música.
+                    Do mesmo modo que <em>danceability</em>, varia de 0 a 1, sendo que os valores próximos a 1 representam músicas mais energéticas.
+                </p>
+
+                <h3><em>instrumentalness</em></h3>
+                <p> 
+                    Essa medida funciona como o <em>acousticness</em>, mas mede a confiança do algoritmo no fato de se trata de uma música instrumental.
+                    Assim, o <em>instrumentalness</em> varia de 0 a 1, sendo 0 uma música com letra e 1 uma música instrumental.
+                </p>
+
+                <h3><em>liveness</em></h3>
+                <p> 
+                    É uma medida que indica a confiança de que é uma gravação ao vivo.
+                    Do mesmo modo que <em>acousticness</em> e <em>instrumentalness</em>, varia de 0 a 1, 0 indicando que não foi detectada a presença de uma plateia e 1 indicando que a música foi gravada ao vivo.
+                    Os valores entre 0 e 1 representam a confiança de um ou de outro extremo.
+                </p>
+
+                <h3><em>loudness</em></h3>
+                <p> 
+                    Esse atributo é uma medida em decibéis de uma média do volume da música.
+                    Como o volume máximo varia com as especificações do alto-falante utilizado, a potência máxima do amplificador é dada por 0.
+                    Então, essa medida, em decibéis, é um valor mais negativo quanto menor a média da potência transmitida ao alto-falante ao longo da música.
+                    De modo geral, um valor de -60dB representa silêncio absoluto.
+                    Assim, essa medida varia de -&infin; a 0.
+                </p>
+                
+                <h3><em>speechiness</em></h3>
+                <p> 
+                    Assim como <em>acousticness</em>, <em>instrumentalness</em> e <em>liveness</em>, apresenta um escore de confiança se a música possui palavras faladas ou não.
+                    Nesse caso, escores acima de 2/3 indicam áudios totalmente compostos por palavras faladas, entre 1/3 e 2/3 indicam áudios que combinam música e fala (inclusive, por exemplo, rap) e abaixo de 1/3, áudios que contêm somente música.
+                </p>
+
+                <h3><em>tempo</em></h3>
+                <p> 
+                    Trata-se de uma estimativa do tempo da música, em batidas por minuto (BPM).
+                    Então, é um número que pode variar de 0 a +&infin;, mas tem uma distribuição simétrica, estando a maior parte das músicas entre os valores de 50 e 200.
+                </p>
+
+                <h3><em>valence</em></h3>
+                <p> 
+                    Trata-se de um escore, variando de 0 a 1, bem como <em>danceability</em> e <em>energy</em>, que mede quão positivos são os sentimentos transmitidos pela música.
+                    Então, valores próximos de 1 representam músicas percebidas como alegres, enquanto as músicas com escores mais próximos a 0 são normalmente percebidas como tristes.
+                </p>
+                
+                <h2> Parâmetros </h2>
+
+                <p>
+                    Considerou-se que cada uma dessas variáveis estava distribuída conforme uma distribuição de probabilidades.
+                    Assim, <em>acousticness</em>, <em>danceability</em>, <em>energy</em>, <em>instrumentalness</em>, <em>liveness</em>, <em>speechiness</em> e <em>valence</em> estiveram distribuídas conforme uma beta inflacionada de zeros e de uns.
+                    Além disso, <em>loudness</em>, após multiplicada por -1, estava distribuída conforme uma distribuição gama.
+                    Por fim, considerou-se que <em>tempo</em> estava distribuída conforme uma normal.
+                </p>
+
+                <h3>alpha e beta</h3>
+                <p>
+                    O alpha e o beta representam parâmetros que controlam o formato da distribuição beta.
+                </p>
+                <p>
+                    Para ler mais sobre a distribuição beta, clique <a href="https://pt.wikipedia.org/wiki/Distribui%C3%A7%C3%A3o_beta" target="_blank">aqui</a>.
+                </p>
+                
+                <h3>theta0, theta1 e theta2</h3>
+                <p>
+                    O theta0 representa a probabilidade de a playlist apresentar uma música com determinada variável entre 0 e 1.
+                    Nesse caso, a variável será modelada conforme uma distribução beta.
+                </p>
+                <p>
+                    O theta1 representa a probabilidade de a playlist apresentar uma música com determinada variável igual a 1.
+                </p>
+                <p>
+                    Por fim, o theta2 representa a probabilidade de a playlist apresentar uma música com determinada variável igual a 0.
+                </p>
+                <p>
+                    Para ler mais sobre a distribuição multinomial, clique <a href="https://pt.wikipedia.org/wiki/Distribui%C3%A7%C3%A3o_multinomial" target="_blank">aqui</a>.
+                </p>
+                
+                <h3>alpha e beta (distribuição gama)</h3>
+                <p>
+                    O alpha e o beta representam, respectivamente, os parâmetros de forma e de escala inversa (taxa) da distribuição gama.
+                </p>
+                <p>
+                    Para ler mais sobre a distribuição gama, clique <a href="https://pt.wikipedia.org/wiki/Distribui%C3%A7%C3%A3o_gama" target="_blank">aqui</a>.
+                </p>
+
+                <h3>mu e sigma</h3>
+                <p>
+                    O mu da distribuição normal representa a média do <em>tempo</em> da playlist.
+                    O sigma, por outro lado, representa a variação do <em>tempo</em> das músicas da playlist em relação a média.
+                </p>
+                <p>
+                    Para ler mais sobre a distribuição normal, clique <a href="https://pt.wikipedia.org/wiki/Distribui%C3%A7%C3%A3o_normal" target="_blank">aqui</a>.
+                </p>
+
             </div>
         </div>
         
