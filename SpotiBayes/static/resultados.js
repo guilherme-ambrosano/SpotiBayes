@@ -36,8 +36,13 @@ function buildHtmlTable(arr) {
                 continue;
             } else {
                 var td = _td_.cloneNode(false);
-                cellValue = arr[key_i][key_j];
-                td.appendChild(document.createTextNode(arr[key_i][key_j] || ''));
+                cellValue = parseFloat(arr[key_i][key_j])
+                if (!isNaN(cellValue)) {
+                    cellValue = cellValue.toFixed(2).replace(".", ",");
+                } else {
+                    cellValue = arr[key_i][key_j]
+                }
+                td.appendChild(document.createTextNode(cellValue));
                 if (arr[key_i][key_j.concat("_Bool")] != true && arr[key_i][key_j.concat("_Bool")] != null) {
                     td.setAttribute("style", "color:#cb181d;");  // Texto vermelho pros valores fora dos IC
                 }
@@ -123,7 +128,7 @@ function construir_div_parametros(fits) {
         soma += fits[variavel][parametro][i];
     }
     var media = soma/fits[variavel][parametro].length;
-    var parametro_txt = parametro.concat(": ").concat(media.toString());
+    var parametro_txt = parametro.concat(": ").concat(media.toFixed(2).replace(".", ","));
     titulo.appendChild(document.createTextNode(parametro_txt));
     div_titulo.appendChild(titulo);
     div_parametros_col.appendChild(div_titulo);
@@ -158,7 +163,8 @@ function construir_div_parametros(fits) {
     }])
 }
 
-function construir_div_variaveis(dentro, fits) {
+function construir_div_variaveis(dentro, fits, summary) {
+
     var div_variaveis_row = document.getElementById("div_variaveis_row");
     var div_parametros_row = document.getElementById("div_parametros_row");
     if(!(div_variaveis_row == null)) {
@@ -184,7 +190,12 @@ function construir_div_variaveis(dentro, fits) {
     div_titulo.setAttribute("id", "div_titulo");
     div_titulo.setAttribute("class", "row");
     var titulo = document.createElement("h2");
-    titulo.appendChild(document.createTextNode(variavel));
+    var media = JSON.parse(summary).Media[variavel].toFixed(2).replace(".", ",");
+    var linf = JSON.parse(summary)["Limite inferior"][variavel].toFixed(2).replace(".", ",");
+    var lsup = JSON.parse(summary)["Limite superior"][variavel].toFixed(2).replace(".", ",");
+    var variavel_txt = variavel.concat(": ").concat(media)
+        .concat(" (").concat(linf).concat(" - ").concat(lsup).concat(")");
+    titulo.appendChild(document.createTextNode(variavel_txt));
     div_titulo.appendChild(titulo);
     div_variaveis_col.appendChild(div_titulo);
 
@@ -209,8 +220,6 @@ function construir_div_variaveis(dentro, fits) {
             selected.push(indices[j]);
         }
     }
-
-    console.log(selected);
 
     var div_boxplot = document.createElement("div");
     div_boxplot.setAttribute("class", "row justify-content-center");
@@ -334,7 +343,7 @@ function construir_div_resultados(dados_completos) {
     sel.attr("id","variavel")
     div_form_variaveis.scrollIntoView({behavior: "smooth", block: "center"});
     sel.on("change", function() {
-        construir_div_variaveis(dados_completos.dentro, dados);
+        construir_div_variaveis(dados_completos.dentro, dados, dados_completos.summary);
     });
         
 }
