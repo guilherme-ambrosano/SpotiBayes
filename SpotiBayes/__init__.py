@@ -312,8 +312,38 @@ def rodar_stan(var, dist, df):
 
     elif dist == "normal":
         media = fit.summary()["summary"][0,0]
+
+    # Pegando diagnósticos
+    rhat = {}
+    neff = {}
+    if dist == "beta_infl_zero":
+        rhat.update({"theta0": fit.summary()["summary"][0,9]})
+        rhat.update({"theta1": fit.summary()["summary"][1,9]})
+        rhat.update({"theta2": fit.summary()["summary"][2,9]})
+        rhat.update({"alpha":  fit.summary()["summary"][3,9]})
+        rhat.update({"beta":   fit.summary()["summary"][4,9]})
+
+        neff.update({"theta0": fit.summary()["summary"][0,8]})
+        neff.update({"theta1": fit.summary()["summary"][1,8]})
+        neff.update({"theta2": fit.summary()["summary"][2,8]})
+        neff.update({"alpha":  fit.summary()["summary"][3,8]})
+        neff.update({"beta":   fit.summary()["summary"][4,8]})
+
+    elif dist == "gama":
+        rhat.update({"alpha":  fit.summary()["summary"][0,9]})
+        rhat.update({"beta":   fit.summary()["summary"][1,9]})
+
+        neff.update({"alpha":  fit.summary()["summary"][0,8]})
+        neff.update({"beta":   fit.summary()["summary"][1,8]})
+
+    elif dist == "normal":
+        rhat.update({"mu":    fit.summary()["summary"][0,9]})
+        rhat.update({"sigma": fit.summary()["summary"][1,9]})
+
+        neff.update({"mu":    fit.summary()["summary"][0,8]})
+        neff.update({"sigma": fit.summary()["summary"][1,8]})
     
-    return result_dict, low, media, upp, bools
+    return result_dict, low, media, upp, bools, rhat, neff
 
 def get_posterioris(api, playlist=None):
     if playlist is not None:
@@ -328,13 +358,17 @@ def get_posterioris(api, playlist=None):
     medias = {}
     upps = {}
     bools_dic = {}
+    rhats = {}
+    neffs = {}
     for var in VARIAVEIS:
-        result_dict, low, media, upp, bools = rodar_stan(var, VARIAVEIS[var], dados)
+        result_dict, low, media, upp, bools, rhat, neff = rodar_stan(var, VARIAVEIS[var], dados)
         fits.update({var.title(): result_dict})
         lows.update({var: low})
         medias.update({var: media})
         upps.update({var: upp})
         bools_dic.update({var: bools})
+        rhats.update({var: rhat})
+        neffs.update({var: neff})
     
     if playlist is not None:
         feats_playlist["título"] = feats_playlist.id.map(lambda row: api.sp.track(row)["name"])
@@ -342,7 +376,8 @@ def get_posterioris(api, playlist=None):
     else:
         feats_playlist = None
     
-    return fits, lows, medias, upps, bools_dic, feats_playlist
+    diagnostico = {"rhat": rhats, "neff": neffs}
+    return fits, lows, medias, upps, bools_dic, feats_playlist, diagnostico 
 
 
 if not os.path.isfile(os.path.join(PASTA, ".cache")):
@@ -371,6 +406,8 @@ def posterior():
     fits_file = "fits_" + playlist + ".csv"
     summary_file = "summary_" + playlist + ".csv"
     dentro_file = "dentro_" + playlist + ".csv"
+    rhat_file = "rhat_" + playlist + ".csv"
+    neff_file = "neff_" + playlist + ".csv"
 
     if os.path.isfile(os.path.join(PASTA, fits_file)) and \
         os.path.isfile(os.path.join(PASTA, summary_file)) and \
@@ -402,7 +439,7 @@ def posterior():
     for arquivo in csv:
         os.remove(os.path.join(PASTA, arquivo))
 
-    fits, lows, medias, upps, bools_dic, dados = get_posterioris(sapi, playlist)
+    fits, lows, medias, upps, bools_dic, dados, diagnostico = get_posterioris(sapi, playlist)
     dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     bools_df = pd.DataFrame(bools_dic)
@@ -445,6 +482,10 @@ def posterior():
     pd.DataFrame.from_dict(fits).to_csv(os.path.join(PASTA, fits_file))
     dentro.to_csv(os.path.join(PASTA, dentro_file))
     summary.to_csv(os.path.join(PASTA, summary_file))
+
+    # Diagnóstico
+    pd.DataFrame.from_dict(diagnostico["rhat"]).to_csv(os.path.join(PASTA, rhat_file))
+    pd.DataFrame.from_dict(diagnostico["neff"]).to_csv(os.path.join(PASTA, neff_file))
 
     # Transformando em JSON pro site
     dentro = dentro.transpose().to_json()
