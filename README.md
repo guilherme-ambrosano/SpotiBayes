@@ -21,6 +21,19 @@ Abra o programa Anaconda Prompt, navegue até a pasta extraída e rode o comando
 setup.bat
 ```
 
+Durante a instalação, o programa irá pedir que você confirme a criação de um arquivo chamado ```distutils.cfg``` em uma determinada pasta.
+Essa pasta será algo como "C:\Usuários\Usuário\.conda\envs\SpotiBayes\lib\distutils\"
+Esse arquivo deve conter o seguinte:
+
+```
+[build]
+compiler=mingw32
+```
+
+Caso o arquivo não exista ou não contenha esse texto, adicione-o manualmente.
+
+Depois disso, continue a instalação.
+
 # Rodando o SpotiBayes
 
 Ainda no anaconda Prompt, rode o comando:
