@@ -15,7 +15,16 @@ https://www.anaconda.com/products/individual
 
 Faça download e extraia os arquivos do SpotiBayes.
 
-Abra o programa Anaconda Prompt, navegue até a pasta extraída e rode o comando:
+Abra o programa Anaconda Prompt que será instalado.
+
+Navegue até a pasta extraída com o comando ```cd```.
+Por exemplo:
+
+```
+cd Downloads\SpotiBayes-master\
+```
+
+Agora rode o comando abaixo:
 
 ```
 setup.bat
@@ -36,16 +45,24 @@ Depois disso, continue a instalação.
 
 # Rodando o SpotiBayes
 
-Ainda no anaconda Prompt, rode o comando:
+Se essa for a primeira vez rodando o SpotiBayes, será necessário criar uma API no Spotify.
+Para registrar uma API no Spotify, siga os passos em:
+
+https://developer.spotify.com/documentation/general/guides/app-settings/
+
+Primeiramente, abra seu Dashboard em https://developer.spotify.com/dashboard/.
+Logue com sua conta do Spotify.
+A seguir, clique em "CREATE API".
+O nome e a descrição da API não importam, pode escrever "SpotiBayes" nos dois campos.
+Na tela seguinte você poderá ver o *CLIENT ID* e o *CLIENT SECRET* da sua API.
+Para adicionar um *REDIRECT URI*, clique em "EDIT SETTINGS" no canto superior direito, digite "https://localhost/" no campo "Redirect URIs" e clique em "ADD".
+
+No Anaconda Prompt, rode o comando:
 
 ```
 python run.py
 ```
 
-Se essa for a primeira vez rodando o SpotiBayes, serão solicitados os dados da sua API.
-Para registrar uma API no Spotify, siga os passos em:
-
-https://developer.spotify.com/documentation/general/guides/app-settings/
-
+Serão solicitados os dados da sua API.
 Depois de preencher os detalhes da API, você deverá colar no terminal o URL para o qual foi redirecionado no seu navegador.
 
