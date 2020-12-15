@@ -178,7 +178,6 @@ model {
 }
 """
 
-
 DISTRIBUICOES = {"beta_infl_zero": dist_beta_infl_zero,
                  "gama": dist_gama,
                  "normal": dist_normal}
@@ -189,7 +188,7 @@ VARIAVEIS = {"danceability":     "beta_infl_zero",
              "speechiness":      "beta_infl_zero",
              "liveness":         "beta_infl_zero",
              "valence":          "beta_infl_zero",
-             "loudness":         "gama",
+             "loudness":         "normal",  # "gama",
              "tempo":            "normal",
              "acousticness":     "beta_infl_zero",
              "instrumentalness": "beta_infl_zero"}
@@ -197,7 +196,7 @@ VARIAVEIS = {"danceability":     "beta_infl_zero",
 
 def preprocess(df):
     df2 = df.loc[:,VARIAVEIS.keys()]
-    df2.loc[:,"loudness"] = -df2.loudness  # invertendo os valores negativos
+    # df2.loc[:,"loudness"] = -df2.loudness  # invertendo os valores negativos
     return df2
 
 
@@ -440,7 +439,7 @@ def posterior():
         os.remove(os.path.join(PASTA, arquivo))
 
     fits, lows, medias, upps, bools_dic, dados, diagnostico = get_posterioris(sapi, playlist)
-    dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
+    # dados.loc[:,"loudness"] = -dados.loudness  # invertendo os valores negativos
 
     bools_df = pd.DataFrame(bools_dic)
     bools_df.columns = [col + '_bool' for col in bools_df.columns]
